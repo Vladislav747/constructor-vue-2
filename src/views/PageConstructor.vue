@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import ICWrapper from '@/components/ICWrapper.vue';
-
 </script>
 
 <template>

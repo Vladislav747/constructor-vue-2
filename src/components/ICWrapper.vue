@@ -1,15 +1,35 @@
-<script setup lang="ts">
+<template>
+  <div :class="$style.wrapper">
+    <ICControls :setImage="setImage" :whenDownloadAsAnImage="downloadHtmlAsImage" />
+    <ICCanvas :imgUrl="imgUrl" ref="ICCanvas" />
+  </div>
+</template>
+
+<script lang="ts">
 import ICCanvas from './ICCanvas.vue';
 import ICControls from './ICControls.vue';
 
+export default {
+  components: {
+    ICCanvas,
+    ICControls,
+  },
+  data: () => ({
+    imgUrl: '',
+  }),
+  methods: {
+    setImage(imgUrl: string) {
+      this.imgUrl = imgUrl;
+    },
+    downloadHtmlAsImage() {
+      const IICanvas = this.$refs.ICCanvas as InstanceType<typeof ICCanvas>;
+      if (IICanvas) {
+        IICanvas.downloadAsImage();
+      }
+    }
+  },
+}
 </script>
-
-<template>
-  <div :class="$style.wrapper">
-    <ICControls />
-    <ICCanvas />
-  </div>
-</template>
 
 <style module>
 .wrapper {
