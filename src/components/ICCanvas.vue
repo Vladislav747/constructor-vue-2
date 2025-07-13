@@ -3,7 +3,7 @@
     <div :class="[
       $style.canvas,
       store.mode === 'text' && $style.modeText
-    ]" :style="canvasBg">
+    ]" :style="canvasBg" ref="canvas">
 
     </div>
   </div>
@@ -12,6 +12,8 @@
 <script lang="ts">
 import { useCounterStore } from '@/stores/InfoConstructor'
 import { downloadAsImage } from '@/utils/extract-image';
+import { TextDiv } from '@/utils/text';
+import { getCanvasPosition } from '@/utils/position';
 
 export default {
   props: {
@@ -27,13 +29,32 @@ export default {
   computed: {
     canvasBg() {
       return this.imgUrl ? { backgroundImage: `url('${this.imgUrl}')` } : undefined;
+    },
+    canvas(): HTMLDivElement {
+      return this.$refs.canvas as HTMLDivElement;
+    },
+    canvasBody(): HTMLDivElement {
+      return this.$refs.canvasBody as HTMLDivElement;
     }
   },
+  mounted() {
+    this.canvas.addEventListener('click', this.addTextEl)
+  },
   methods: {
+    addTextEl(evt: MouseEvent) {
+      const positions = getCanvasPosition(evt, this.canvas)
+      console.log(positions);
+      const div = new TextDiv({
+        canvas: this.canvas,
+        text: this.store.textarea,
+        ...positions,
+      });
+      div.append();
+
+    },
     downloadAsImage() {
-      const canvasBody = this.$refs.canvasBody as HTMLElement;
-      if (canvasBody) {
-        downloadAsImage(canvasBody)
+      if (this.canvasBody) {
+        downloadAsImage(this.canvasBody)
       }
     }
   }
@@ -52,6 +73,7 @@ export default {
 }
 
 .canvas {
+  position: relative;
   width: 464px;
   height: 618px;
   outline: 1px solid red;
@@ -62,5 +84,16 @@ export default {
 
 .canvas.modeText {
   cursor: text;
+}
+</style>
+
+<style>
+.divText {
+  position: absolute;
+  display: inline-block;
+  padding: 8px;
+  word-break: break-all;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
 }
 </style>
