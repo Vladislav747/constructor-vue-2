@@ -4,7 +4,7 @@ import ICWrapper from '@/components/ICWrapper.vue';
 
 <template>
   <div class="about">
-    <header>Some header</header>
+    <header>Page constructor header</header>
     <ICWrapper />
   </div>
 </template>

@@ -1,12 +1,16 @@
 <template>
   <div :class="$style.body" ref="canvasBody">
-    <div :class="$style.canvas" :style="canvasBg">
+    <div :class="[
+      $style.canvas,
+      store.mode === 'text' && $style.modeText
+    ]" :style="canvasBg">
 
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import { useCounterStore } from '@/stores/InfoConstructor'
 import { downloadAsImage } from '@/utils/extract-image';
 
 export default {
@@ -17,6 +21,9 @@ export default {
       required: true,
     }
   },
+  data: () => ({
+    store: useCounterStore()
+  }),
   computed: {
     canvasBg() {
       return this.imgUrl ? { backgroundImage: `url('${this.imgUrl}')` } : undefined;
@@ -50,5 +57,10 @@ export default {
   outline: 1px solid red;
   background-size: contain;
   background-repeat: no-repeat;
+  background-position: top center;
+}
+
+.canvas.modeText {
+  cursor: text;
 }
 </style>
