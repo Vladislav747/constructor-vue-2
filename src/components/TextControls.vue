@@ -5,11 +5,11 @@
 </template>
 
 <script lang="ts">
-import { useCounterStore } from '@/stores/InfoConstructor'
+import { useInfoConstructor } from '@/stores/InfoConstructor'
 
 export default {
   data: () => ({
-    store: useCounterStore()
+    store: useInfoConstructor()
   }),
   methods: {
     handleInput(event: Event) {

@@ -10,10 +10,11 @@
 </template>
 
 <script lang="ts">
-import { useCounterStore } from '@/stores/InfoConstructor'
+import { useInfoConstructor } from '@/stores/InfoConstructor'
 import { downloadAsImage } from '@/utils/extract-image';
 import { TextDiv } from '@/utils/text';
 import { getCanvasPosition } from '@/utils/position';
+import { Borders } from '@/utils/borders';
 
 export default {
   props: {
@@ -24,7 +25,8 @@ export default {
     }
   },
   data: () => ({
-    store: useCounterStore()
+    store: useInfoConstructor(),
+    sharedTextBorder: null as null | Borders
   }),
   computed: {
     canvasBg() {
@@ -38,19 +40,26 @@ export default {
     }
   },
   mounted() {
+    this.sharedTextBorder = new Borders({ canvasEl: this.canvas });
     this.canvas.addEventListener('click', this.addTextEl)
   },
   methods: {
     addTextEl(evt: MouseEvent) {
-      const positions = getCanvasPosition(evt, this.canvas)
-      console.log(positions);
+      if (!this.sharedTextBorder) {
+        return;
+      }
+      const positions = getCanvasPosition({
+        event: evt,
+        canvasEl: this.canvas,
+      });
       const div = new TextDiv({
-        canvas: this.canvas,
+        canvasEl: this.canvas,
+        borders: this.sharedTextBorder,
         text: this.store.textarea,
+        inputFn: this.store.changeTextarea,
         ...positions,
       });
       div.append();
-
     },
     downloadAsImage() {
       if (this.canvasBody) {
@@ -95,5 +104,18 @@ export default {
   word-break: break-all;
   background-color: #f0f0f0;
   border: 1px solid #ccc;
+  cursor: default;
+}
+
+.divText:focus {
+  outline: transparent;
+}
+
+.elementBorders {
+  position: absolute;
+  display: none;
+  border: 2px solid blue;
+  pointer-events: none;
+  z-index: 9000;
 }
 </style>

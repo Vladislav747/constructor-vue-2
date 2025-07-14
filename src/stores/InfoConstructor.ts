@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { type ICMode } from "@/components/types";
 
-export const useCounterStore = defineStore("IGConstructor", {
+export const useInfoConstructor = defineStore("IGConstructor", {
   state: (): {
     mode: ICMode;
     textarea: string;

@@ -7,5 +7,8 @@ module.exports = {
     "plugin:vue/essential",
     "eslint:recommended",
     "@vue/eslint-config-typescript/recommended"
-  ]
+  ],
+  "rules": {
+    'no-empty-function': { "allow": ["arrowFunctions"] }
+  }
 }
