@@ -26,7 +26,9 @@ export default {
   },
   data: () => ({
     store: useInfoConstructor(),
-    sharedTextBorder: null as null | Borders
+    sharedTextBorder: null as null | Borders,
+    elements: {} as Record<string, TextDiv>,
+    currentEl: null as null | TextDiv,
   }),
   computed: {
     canvasBg() {
@@ -44,6 +46,13 @@ export default {
     this.canvas.addEventListener('click', this.addTextEl)
   },
   methods: {
+    selectEl(id: string) {
+      if (this.currentEl) {
+        this.currentEl.isSelected = false;
+      }
+      this.currentEl = this.elements[id];
+      this.store.changeTextarea(this.currentEl.text)
+    },
     addTextEl(evt: MouseEvent) {
       if (!this.sharedTextBorder) {
         return;
@@ -52,18 +61,30 @@ export default {
         event: evt,
         canvasEl: this.canvas,
       });
+      const newElId = String(Date.now());
       const div = new TextDiv({
+        id: newElId,
         canvasEl: this.canvas,
         borders: this.sharedTextBorder,
         text: this.store.textarea,
         inputFn: this.store.changeTextarea,
+        selectEl: this.selectEl,
         ...positions,
       });
+      this.elements[newElId] = div;
       div.append();
+      this.selectEl(newElId);
     },
     downloadAsImage() {
       if (this.canvasBody) {
         downloadAsImage(this.canvasBody)
+      }
+    }
+  },
+  watch: {
+    'store.textarea'(text: string) {
+      if (this.currentEl && document.activeElement !== this.currentEl.el) {
+        this.currentEl.outerUpdateText(text);
       }
     }
   }
