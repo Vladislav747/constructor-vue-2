@@ -48,7 +48,7 @@ export default {
   methods: {
     selectEl(id: string) {
       if (this.currentEl) {
-        this.currentEl.isSelected = false;
+        this.currentEl.deselect();
       }
       this.currentEl = this.elements[id];
       this.store.changeTextarea(this.currentEl.text)
@@ -79,7 +79,7 @@ export default {
       if (this.canvasBody) {
         downloadAsImage(this.canvasBody)
       }
-    }
+    },
   },
   watch: {
     'store.textarea'(text: string) {
@@ -126,6 +126,10 @@ export default {
   background-color: #f0f0f0;
   border: 1px solid #ccc;
   cursor: default;
+}
+
+.divText[contenteditable="true"] {
+  cursor: text;
 }
 
 .divText:focus {

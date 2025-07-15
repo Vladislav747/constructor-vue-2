@@ -20,35 +20,32 @@ export class TextDiv {
   id: string;
   canvasEl: HTMLDivElement;
   borders: Borders;
-  el: HTMLDivElement;
+  el: HTMLDivElement = document.createElement("div");
   text: string;
   xPos: number;
   yPos: number;
-  isSelected: boolean;
+  isSelected: boolean = true;
+  isEdit: boolean = false;
 
   constructor({ id, canvasEl, borders, text, xPos, yPos, inputFn, selectEl }: TextDivProperties) {
     console.log("TextDiv constructor");
 
     this.id = id;
-    this.el = document.createElement("div");
     this.canvasEl = canvasEl;
     this.xPos = xPos;
     this.yPos = yPos;
     this.borders = borders;
-    this.isSelected = true;
 
     // Adding basics
     this.el.classList.add("divText");
-    this.el.contentEditable = "true";
     this.el.addEventListener("click", (evt: MouseEvent) => {
       evt.stopImmediatePropagation();
-      if (this.isSelected) {
-        this.isSelected = false;
-        this.borders.hide();
-      } else {
+      if (!this.isSelected) {
         this.isSelected = true;
         selectEl(this.id);
         this.showBorders();
+      } else {
+        this.setIsEdit(true);
       }
     });
 
@@ -82,6 +79,21 @@ export class TextDiv {
       width: this.el.offsetWidth,
       height: this.el.offsetHeight,
     };
+  }
+
+  setIsEdit(isEdit: boolean) {
+    if (isEdit === true) {
+      this.isEdit = true;
+      this.el.contentEditable = "true";
+      return;
+    }
+    this.isEdit = false;
+    this.el.contentEditable = "false";
+  }
+
+  deselect() {
+    this.isSelected = false;
+    this.setIsEdit(false);
   }
 
   /** TODO: Fix overlapping to the right and bottom
