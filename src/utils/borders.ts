@@ -4,21 +4,21 @@ export class Borders {
   borderEl: HTMLDivElement;
 
   constructor({ canvasEl }: { canvasEl: HTMLDivElement }) {
-    console.log("Borders constructor");
-    this.borderEl = document.createElement("div");
-    this.borderEl.classList.add("elementBorders");
+    console.log('Borders constructor');
+    this.borderEl = document.createElement('div');
+    this.borderEl.classList.add('elementBorders');
     this.canvasEl = canvasEl;
     this.canvasEl.appendChild(this.borderEl);
   }
 
   show({ xPos, yPos, width, height }: { xPos: number; yPos: number; width: number; height: number }) {
-    this.borderEl.style.display = "block";
+    this.borderEl.style.display = 'block';
     this.setSize({ width, height });
     this.setPositions({ xPos, yPos });
   }
 
   hide() {
-    this.borderEl.style.display = "none";
+    this.borderEl.style.display = 'none';
   }
 
   setPositions({ xPos, yPos }: { xPos: number; yPos: number }) {

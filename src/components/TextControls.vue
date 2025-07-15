@@ -1,26 +1,26 @@
 <template>
   <div>
-    <textarea :class="$style.textarea" :value="store.textarea" @input="$event => handleInput($event)"></textarea>
+    <textarea :class="$style.textarea" :value="store.textarea" @input="$event => handleInput($event)" />
   </div>
 </template>
 
 <script lang="ts">
-import { useInfoConstructor } from '@/stores/InfoConstructor'
+import { useInfoConstructor } from '@/stores/InfoConstructor';
 
 export default {
   data: () => ({
-    store: useInfoConstructor()
+    store: useInfoConstructor(),
   }),
   methods: {
     handleInput(event: Event) {
-      event.preventDefault()
-      const target = event.target as HTMLTextAreaElement
+      event.preventDefault();
+      const target = event.target as HTMLTextAreaElement;
       if (target) {
-        this.store.changeTextarea(target.value)
+        this.store.changeTextarea(target.value);
       }
-    }
+    },
   },
-}
+};
 </script>
 
 <style module>

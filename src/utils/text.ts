@@ -1,4 +1,4 @@
-import { Borders } from "./borders";
+import { Borders } from './borders';
 
 export type TextDivProperties = {
   id: string;
@@ -20,7 +20,7 @@ export class TextDiv {
   id: string;
   canvasEl: HTMLDivElement;
   borders: Borders;
-  el: HTMLDivElement = document.createElement("div");
+  el: HTMLDivElement = document.createElement('div');
   text: string;
   xPos: number;
   yPos: number;
@@ -28,7 +28,7 @@ export class TextDiv {
   isEdit: boolean = false;
 
   constructor({ id, canvasEl, borders, text, xPos, yPos, inputFn, selectEl }: TextDivProperties) {
-    console.log("TextDiv constructor");
+    console.log('TextDiv constructor');
 
     this.id = id;
     this.canvasEl = canvasEl;
@@ -37,8 +37,8 @@ export class TextDiv {
     this.borders = borders;
 
     // Adding basics
-    this.el.classList.add("divText");
-    this.el.addEventListener("click", (evt: MouseEvent) => {
+    this.el.classList.add('divText');
+    this.el.addEventListener('click', (evt: MouseEvent) => {
       evt.stopImmediatePropagation();
       if (!this.isSelected) {
         this.isSelected = true;
@@ -49,7 +49,7 @@ export class TextDiv {
       }
     });
 
-    this.el.addEventListener("input", (evt) => {
+    this.el.addEventListener('input', () => {
       this.text = this.el.innerText;
       inputFn(this.text);
       this.showBorders();
@@ -84,11 +84,11 @@ export class TextDiv {
   setIsEdit(isEdit: boolean) {
     if (isEdit === true) {
       this.isEdit = true;
-      this.el.contentEditable = "true";
+      this.el.contentEditable = 'true';
       return;
     }
     this.isEdit = false;
-    this.el.contentEditable = "false";
+    this.el.contentEditable = 'false';
   }
 
   deselect() {

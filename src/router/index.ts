@@ -1,8 +1,8 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import PageIndex from '../views/PageIndex.vue'
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+import PageIndex from '../views/PageIndex.vue';
 
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 const router = new VueRouter({
   mode: 'history',
@@ -11,7 +11,7 @@ const router = new VueRouter({
     {
       path: '/',
       name: 'home',
-      component: PageIndex
+      component: PageIndex,
     },
     {
       path: '/constructor',
@@ -19,9 +19,9 @@ const router = new VueRouter({
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('../views/PageConstructor.vue')
-    }
-  ]
-})
+      component: () => import('../views/PageConstructor.vue'),
+    },
+  ],
+});
 
-export default router
+export default router;

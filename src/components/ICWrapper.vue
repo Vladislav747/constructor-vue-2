@@ -1,7 +1,7 @@
 <template>
   <div :class="$style.wrapper">
     <ICControls :setImage="setImage" :whenDownloadAsAnImage="downloadHtmlAsImage" />
-    <ICCanvas :imgUrl="imgUrl" ref="ICCanvas" />
+    <ICCanvas ref="ICCanvas" :imgUrl="imgUrl" />
   </div>
 </template>
 
@@ -26,9 +26,9 @@ export default {
       if (IICanvas) {
         IICanvas.downloadAsImage();
       }
-    }
+    },
   },
-}
+};
 </script>
 
 <style module>

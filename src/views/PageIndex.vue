@@ -1,11 +1,11 @@
 <script lang="ts">
-import TheWelcome from '@/components/other/TheWelcome.vue'
+import TheWelcome from '@/components/other/TheWelcome.vue';
 
 export default {
   components: {
     TheWelcome,
-  }
-}
+  },
+};
 </script>
 
 <template>

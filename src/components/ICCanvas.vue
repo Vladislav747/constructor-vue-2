@@ -1,16 +1,18 @@
 <template>
-  <div :class="$style.body" ref="canvasBody">
-    <div :class="[
-      $style.canvas,
-      store.mode === 'text' && $style.modeText
-    ]" :style="canvasBg" ref="canvas">
-
-    </div>
+  <div ref="canvasBody" :class="$style.body">
+    <div
+      ref="canvas"
+      :class="[
+        $style.canvas,
+        store.mode === 'text' && $style.modeText
+      ]"
+      :style="canvasBg"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { useInfoConstructor } from '@/stores/InfoConstructor'
+import { useInfoConstructor } from '@/stores/InfoConstructor';
 import { downloadAsImage } from '@/utils/extract-image';
 import { TextDiv } from '@/utils/text';
 import { getCanvasPosition } from '@/utils/position';
@@ -22,7 +24,7 @@ export default {
       type: String,
       default: '',
       required: true,
-    }
+    },
   },
   data: () => ({
     store: useInfoConstructor(),
@@ -39,11 +41,18 @@ export default {
     },
     canvasBody(): HTMLDivElement {
       return this.$refs.canvasBody as HTMLDivElement;
-    }
+    },
+  },
+  watch: {
+    'store.textarea'(text: string) {
+      if (this.currentEl && document.activeElement !== this.currentEl.el) {
+        this.currentEl.outerUpdateText(text);
+      }
+    },
   },
   mounted() {
     this.sharedTextBorder = new Borders({ canvasEl: this.canvas });
-    this.canvas.addEventListener('click', this.addTextEl)
+    this.canvas.addEventListener('click', this.addTextEl);
   },
   methods: {
     selectEl(id: string) {
@@ -51,7 +60,7 @@ export default {
         this.currentEl.deselect();
       }
       this.currentEl = this.elements[id];
-      this.store.changeTextarea(this.currentEl.text)
+      this.store.changeTextarea(this.currentEl.text);
     },
     addTextEl(evt: MouseEvent) {
       if (!this.sharedTextBorder) {
@@ -77,18 +86,11 @@ export default {
     },
     downloadAsImage() {
       if (this.canvasBody) {
-        downloadAsImage(this.canvasBody)
+        downloadAsImage(this.canvasBody);
       }
     },
   },
-  watch: {
-    'store.textarea'(text: string) {
-      if (this.currentEl && document.activeElement !== this.currentEl.el) {
-        this.currentEl.outerUpdateText(text);
-      }
-    }
-  }
-}
+};
 </script>
 
 <style module>
