@@ -1,13 +1,6 @@
 <template>
   <div ref="canvasBody" :class="$style.body">
-    <div
-      ref="canvas"
-      :class="[
-        $style.canvas,
-        store.mode === 'text' && $style.modeText
-      ]"
-      :style="canvasBg"
-    />
+    <div ref="canvas" :class="[$style.canvas, store.mode === 'text' && $style.modeText]" :style="canvasBg" />
   </div>
 </template>
 
@@ -17,6 +10,7 @@ import { downloadAsImage } from '@/utils/extract-image';
 import { TextDiv } from '@/utils/text';
 import { getCanvasPosition } from '@/utils/position';
 import { Borders } from '@/utils/borders';
+import throttle from 'lodash/throttle';
 
 export default {
   props: {
@@ -31,6 +25,8 @@ export default {
     sharedTextBorder: null as null | Borders,
     elements: {} as Record<string, TextDiv>,
     currentEl: null as null | TextDiv,
+    isDragging: false,
+    throttledOnMouseMove: (evt: MouseEvent) => {},
   }),
   computed: {
     canvasBg() {
@@ -46,15 +42,23 @@ export default {
   watch: {
     'store.textarea'(text: string) {
       if (this.currentEl && document.activeElement !== this.currentEl.el) {
-        this.currentEl.outerUpdateText(text);
+        this.currentEl.updateText(text);
       }
     },
   },
   mounted() {
     this.sharedTextBorder = new Borders({ canvasEl: this.canvas });
     this.canvas.addEventListener('click', this.addTextEl);
+    this.throttledOnMouseMove = throttle(this.onMouseMove, 20);
+    this.canvas.addEventListener('mousemove', this.throttledOnMouseMove);
   },
   methods: {
+    onMouseMove(evt: MouseEvent) {
+      if (!this.isDragging || !this.currentEl) {
+        return;
+      }
+      this.currentEl.moveEl(evt);
+    },
     selectEl(id: string) {
       if (this.currentEl) {
         this.currentEl.deselect();
@@ -63,7 +67,7 @@ export default {
       this.store.changeTextarea(this.currentEl.text);
     },
     addTextEl(evt: MouseEvent) {
-      if (!this.sharedTextBorder) {
+      if (this.isDragging || !this.sharedTextBorder) {
         return;
       }
       const positions = getCanvasPosition({
@@ -78,11 +82,21 @@ export default {
         text: this.store.textarea,
         inputFn: this.store.changeTextarea,
         selectEl: this.selectEl,
+        onDragStart: this.onDragStart,
+        onDragEnd: this.onDragEnd,
         ...positions,
       });
       this.elements[newElId] = div;
       div.append();
       this.selectEl(newElId);
+    },
+    onDragStart() {
+      console.log('onDragStart');
+      this.isDragging = true;
+    },
+    onDragEnd() {
+      console.log('onDragEnd');
+      this.isDragging = false;
     },
     downloadAsImage() {
       if (this.canvasBody) {
@@ -101,7 +115,7 @@ export default {
   max-width: 800px;
   height: 666px;
   padding: 24px;
-  background-color: #9BB7E212;
+  background-color: #9bb7e212;
 }
 
 .canvas {
@@ -132,6 +146,9 @@ export default {
 
 .divText[contenteditable="true"] {
   cursor: text;
+}
+.divText.isDragging {
+  cursor: move;
 }
 
 .divText:focus {

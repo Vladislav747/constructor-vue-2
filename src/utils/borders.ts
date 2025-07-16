@@ -4,7 +4,6 @@ export class Borders {
   borderEl: HTMLDivElement;
 
   constructor({ canvasEl }: { canvasEl: HTMLDivElement }) {
-    console.log('Borders constructor');
     this.borderEl = document.createElement('div');
     this.borderEl.classList.add('elementBorders');
     this.canvasEl = canvasEl;

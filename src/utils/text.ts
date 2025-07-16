@@ -1,4 +1,7 @@
+import { getCanvasPosition } from '@/utils/position';
 import { Borders } from './borders';
+
+const DRAG_THRESHOLD = 5;
 
 export type TextDivProperties = {
   id: string;
@@ -9,6 +12,8 @@ export type TextDivProperties = {
   yPos: number;
   inputFn: (value: string) => void;
   selectEl: (id: string) => void;
+  onDragStart: (id: string) => void;
+  onDragEnd: (id: string) => void;
 };
 
 /** TODO: redo in "left" and "top" properties
@@ -26,20 +31,28 @@ export class TextDiv {
   yPos: number;
   isSelected: boolean = true;
   isEdit: boolean = false;
+  isDrag: boolean = false;
+  onDragStart: (id: string) => void;
+  onDragEnd: (id: string) => void;
+  xDragStartPos: null | number = null;
+  yDragStartPos: null | number = null;
 
-  constructor({ id, canvasEl, borders, text, xPos, yPos, inputFn, selectEl }: TextDivProperties) {
-    console.log('TextDiv constructor');
-
+  constructor({ id, canvasEl, borders, text, xPos, yPos, inputFn, selectEl, onDragStart, onDragEnd }: TextDivProperties) {
     this.id = id;
     this.canvasEl = canvasEl;
     this.xPos = xPos;
     this.yPos = yPos;
     this.borders = borders;
+    this.onDragStart = onDragStart;
+    this.onDragEnd = onDragEnd;
 
     // Adding basics
     this.el.classList.add('divText');
     this.el.addEventListener('click', (evt: MouseEvent) => {
       evt.stopImmediatePropagation();
+      if (this.isDrag) {
+        return;
+      }
       if (!this.isSelected) {
         this.isSelected = true;
         selectEl(this.id);
@@ -48,6 +61,15 @@ export class TextDiv {
         this.setIsEdit(true);
       }
     });
+
+    this.el.addEventListener('mousedown', () => {
+      if (this.isEdit) {
+        return;
+      }
+      this.el.addEventListener('mousemove', this.checkDragThreshold);
+    });
+
+    this.el.addEventListener('mouseup', this.onMouseUp);
 
     this.el.addEventListener('input', () => {
       this.text = this.el.innerText;
@@ -62,7 +84,57 @@ export class TextDiv {
     this.el.style.top = `${yPos}px`;
   }
 
-  outerUpdateText(text: string) {
+  onMouseUp = () => {
+    if (this.isEdit) {
+      return;
+    }
+    // setTimeout to avoid calling setIsEdit before mouseup on click event
+    setTimeout(() => {
+      if (this.isEdit) {
+        return;
+      }
+      this.isDrag = false;
+      this.onDragEnd(this.id);
+      this.el.classList.remove('isDragging');
+      this.xDragStartPos = null;
+      this.yDragStartPos = null;
+    }, 0);
+  };
+
+  checkDragThreshold = (evt: MouseEvent) => {
+    if (this.isEdit || !this.isSelected) {
+      this.el.removeEventListener('mousemove', this.checkDragThreshold);
+      return;
+    }
+    const { xPos, yPos } = getCanvasPosition({ event: evt, canvasEl: this.el });
+    if (this.xDragStartPos === null || this.yDragStartPos === null) {
+      this.xDragStartPos = xPos;
+      this.yDragStartPos = yPos;
+      return;
+    }
+    const dx = this.xDragStartPos - xPos;
+    const dy = this.yDragStartPos - yPos;
+    if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) {
+      this.isDrag = true;
+      this.onDragStart(this.id);
+      this.el.classList.add('isDragging');
+      this.el.removeEventListener('mousemove', this.checkDragThreshold);
+    }
+  };
+
+  public moveEl(evt: MouseEvent) {
+    const { xPos: xPosCanvas, yPos: yPosCanvas } = getCanvasPosition({
+      event: evt,
+      canvasEl: this.canvasEl,
+    });
+    this.xPos = xPosCanvas - (this.xDragStartPos || 0);
+    this.yPos = yPosCanvas - (this.yDragStartPos || 0);
+    this.el.style.left = `${this.xPos}px`;
+    this.el.style.top = `${this.yPos}px`;
+    this.showBorders();
+  }
+
+  public updateText(text: string) {
     this.text = text;
     this.el.innerText = text;
     this.showBorders();
@@ -82,6 +154,9 @@ export class TextDiv {
   }
 
   setIsEdit(isEdit: boolean) {
+    if (this.isDrag) {
+      return;
+    }
     if (isEdit === true) {
       this.isEdit = true;
       this.el.contentEditable = 'true';
@@ -91,7 +166,7 @@ export class TextDiv {
     this.el.contentEditable = 'false';
   }
 
-  deselect() {
+  public deselect() {
     this.isSelected = false;
     this.setIsEdit(false);
   }

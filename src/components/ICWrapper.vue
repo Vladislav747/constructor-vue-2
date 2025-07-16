@@ -1,7 +1,7 @@
 <template>
   <div :class="$style.wrapper">
-    <ICControls :setImage="setImage" :whenDownloadAsAnImage="downloadHtmlAsImage" />
     <ICCanvas ref="ICCanvas" :imgUrl="imgUrl" />
+    <ICControls :setImage="setImage" :whenDownloadAsAnImage="downloadHtmlAsImage" />
   </div>
 </template>
 
