@@ -1,6 +1,11 @@
 <template>
-  <div ref="canvasBody" :class="$style.body">
-    <div ref="canvas" :class="[$style.canvas, store.mode === 'text' && $style.modeText]" :style="canvasBg" />
+  <div ref="canvasBody" :class="$style.body" @click="handleDeselect">
+    <div
+      ref="canvas"
+      :class="[$style.canvas, store.mode === 'text' && $style.modeText]"
+      :style="canvasBg"
+      @click="addTextEl"
+    />
   </div>
 </template>
 
@@ -48,11 +53,24 @@ export default {
   },
   mounted() {
     this.sharedTextBorder = new Borders({ canvasEl: this.canvas });
-    this.canvas.addEventListener('click', this.addTextEl);
     this.throttledOnMouseMove = throttle(this.onMouseMove, 20);
     this.canvas.addEventListener('mousemove', this.throttledOnMouseMove);
   },
+  onBeforeUnmount() {
+    this.canvas.removeEventListener('mousemove', this.throttledOnMouseMove);
+  },
   methods: {
+    handleDeselect(evt: MouseEvent) {
+      if (evt.target === this.canvasBody) {
+        console.log('handleDeselect');
+        evt.stopImmediatePropagation();
+        if (this.currentEl) {
+          this.currentEl.deselect();
+          this.sharedTextBorder?.hide();
+        }
+        this.currentEl = null;
+      }
+    },
     onMouseMove(evt: MouseEvent) {
       if (!this.isDragging || !this.currentEl) {
         return;
@@ -75,27 +93,28 @@ export default {
         canvasEl: this.canvas,
       });
       const newElId = String(Date.now());
-      const div = new TextDiv({
-        id: newElId,
-        canvasEl: this.canvas,
-        borders: this.sharedTextBorder,
-        text: this.store.textarea,
-        inputFn: this.store.changeTextarea,
-        selectEl: this.selectEl,
-        onDragStart: this.onDragStart,
-        onDragEnd: this.onDragEnd,
-        ...positions,
-      });
-      this.elements[newElId] = div;
-      div.append();
-      this.selectEl(newElId);
+      if (this.store.mode === 'text') {
+        const div = new TextDiv({
+          id: newElId,
+          canvasEl: this.canvas,
+          borders: this.sharedTextBorder,
+          text: this.store.textarea,
+          inputFn: this.store.changeTextarea,
+          selectEl: this.selectEl,
+          onDragStart: this.onDragStart,
+          onDragEnd: this.onDragEnd,
+          ...positions,
+        });
+        this.elements[newElId] = div;
+        div.append();
+        this.selectEl(newElId);
+        return;
+      }
     },
     onDragStart() {
-      console.log('onDragStart');
       this.isDragging = true;
     },
     onDragEnd() {
-      console.log('onDragEnd');
       this.isDragging = false;
     },
     downloadAsImage() {
@@ -144,7 +163,7 @@ export default {
   cursor: default;
 }
 
-.divText[contenteditable="true"] {
+.divText[contenteditable='true'] {
   cursor: text;
 }
 .divText.isDragging {
