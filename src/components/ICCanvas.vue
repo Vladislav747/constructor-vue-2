@@ -172,6 +172,41 @@ export default {
   outline: transparent;
 }
 
+.elBorderCorner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--action-500);
+}
+
+.elBorderCorner.topLeft {
+  top: -4px;
+  left: -4px;
+  cursor: nwse-resize;
+  pointer-events: all;
+}
+
+.elBorderCorner.topRight {
+  top: -4px;
+  right: -4px;
+  cursor: nesw-resize;
+  pointer-events: all;
+}
+
+.elBorderCorner.botLeft {
+  bottom: -4px;
+  left: -4px;
+  cursor: nesw-resize;
+  pointer-events: all;
+}
+
+.elBorderCorner.botRight {
+  bottom: -4px;
+  right: -4px;
+  cursor: nwse-resize;
+  pointer-events: all;
+}
+
 .elementBorders {
   position: absolute;
   display: none;
