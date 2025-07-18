@@ -1,0 +1,99 @@
+.borderEdge {
+  position: absolute;
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.borderEdge.top,
+.borderEdge.bot {
+  left: 4px;
+  right: 4px;
+  height: 9px;
+  cursor: ns-resize;
+}
+
+.borderEdge.top {
+  top: -5px;
+}
+
+.borderEdge.bot {
+  bottom: -5px;
+}
+
+.borderEdge.left,
+.borderEdge.right {
+  top: 4px;
+  bottom: 4px;
+  width: 9px;
+  cursor: ew-resize;
+}
+
+.borderEdge.left {
+  left: -5px;
+}
+
+.borderEdge.right {
+  right: -5px;
+}
+
+.borderEdge::before {
+  content: '';
+  background-color: var(--action-500);
+}
+
+.borderEdge.top::before,
+.borderEdge.bot::before {
+  width: 100%;
+  height: 1px;
+}
+
+.borderEdge.left::before,
+.borderEdge.right::before {
+  width: 1px;
+  height: 100%;
+}
+
+.borderCorner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--action-500);
+}
+
+.borderCorner.topLeft {
+  top: -4px;
+  left: -4px;
+  cursor: nwse-resize;
+  pointer-events: all;
+}
+
+.borderCorner.topRight {
+  top: -4px;
+  right: -4px;
+  cursor: nesw-resize;
+  pointer-events: all;
+}
+
+.borderCorner.botLeft {
+  bottom: -4px;
+  left: -4px;
+  cursor: nesw-resize;
+  pointer-events: all;
+}
+
+.borderCorner.botRight {
+  bottom: -4px;
+  right: -4px;
+  cursor: nwse-resize;
+  pointer-events: all;
+}
+
+.elementBorders {
+  position: absolute;
+  display: none;
+  border: 1px solid transparent;
+  pointer-events: none;
+  z-index: 9000;
+}
