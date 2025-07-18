@@ -158,8 +158,6 @@ export default {
   display: inline-block;
   padding: 8px;
   word-break: break-all;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
   cursor: default;
 }
 
@@ -177,7 +175,7 @@ export default {
 .elementBorders {
   position: absolute;
   display: none;
-  border: 2px solid blue;
+  border: 1px solid var(--action-500);
   pointer-events: none;
   z-index: 9000;
 }
