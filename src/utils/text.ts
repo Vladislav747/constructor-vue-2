@@ -85,6 +85,7 @@ export class TextDiv {
   }
 
   onMouseUp = () => {
+    this.el.removeEventListener('mousemove', this.checkDragThreshold);
     if (this.isEdit) {
       return;
     }
