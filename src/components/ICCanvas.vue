@@ -43,6 +43,9 @@ export default {
     canvasBody(): HTMLDivElement {
       return this.$refs.canvasBody as HTMLDivElement;
     },
+    isResizing(): boolean {
+      return this.sharedTextBorder?.isResize || false;
+    },
   },
   watch: {
     'store.textarea'(text: string) {
@@ -55,6 +58,7 @@ export default {
     this.sharedTextBorder = new Borders({ canvasEl: this.canvas });
     this.throttledOnMouseMove = throttle(this.onMouseMove, 20);
     this.canvas.addEventListener('mousemove', this.throttledOnMouseMove);
+    document.addEventListener('mouseup', this.sharedTextBorder.cancelResize);
   },
   onBeforeUnmount() {
     this.canvas.removeEventListener('mousemove', this.throttledOnMouseMove);
@@ -62,7 +66,6 @@ export default {
   methods: {
     handleDeselect(evt: MouseEvent) {
       if (evt.target === this.canvasBody) {
-        console.log('handleDeselect');
         evt.stopImmediatePropagation();
         if (this.currentEl) {
           this.currentEl.deselect();
@@ -72,10 +75,15 @@ export default {
       }
     },
     onMouseMove(evt: MouseEvent) {
-      if (!this.isDragging || !this.currentEl) {
+      if (!this.currentEl) {
         return;
       }
-      this.currentEl.moveEl(evt);
+      if (this.isDragging) {
+        this.currentEl.moveEl(evt);
+      }
+      if (this.isResizing) {
+        this.currentEl.resize(evt);
+      }
     },
     selectEl(id: string) {
       if (this.currentEl) {
@@ -85,7 +93,7 @@ export default {
       this.store.changeTextarea(this.currentEl.text);
     },
     addTextEl(evt: MouseEvent) {
-      if (this.isDragging || !this.sharedTextBorder) {
+      if (this.isDragging || this.isResizing || !this.sharedTextBorder) {
         return;
       }
       const positions = getCanvasPosition({

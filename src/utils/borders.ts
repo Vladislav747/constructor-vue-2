@@ -10,14 +10,6 @@ class CornerControl {
     this.el = document.createElement('div');
     this.el.classList.add('borderCorner', position);
   }
-
-  attachTo(parent: HTMLElement) {
-    parent.appendChild(this.el);
-  }
-
-  setDragHandler(handler: (e: MouseEvent) => void) {
-    this.el.onmousedown = (e: MouseEvent) => {};
-  }
 }
 
 /** Singletone */
@@ -26,6 +18,8 @@ export class Borders {
   borderEl: HTMLDivElement;
   borderEdges: Record<BorderPosition, HTMLDivElement>;
   cornerControls: Record<CornerPosition, CornerControl>;
+  isResize: boolean = false;
+  resizeBehavior: BorderPosition | CornerPosition= 'top';
 
   constructor({ canvasEl }: { canvasEl: HTMLDivElement }) {
     this.borderEl = document.createElement('div');
@@ -48,7 +42,11 @@ export class Borders {
     };
 
     (Object.keys(this.cornerControls) as CornerPosition[]).forEach((key: CornerPosition) =>
-      this.borderEl.append(this.cornerControls[key].el)
+    {
+      const el = this.cornerControls[key].el;
+      el.addEventListener('mousedown', (evt: MouseEvent) => this.onResizeStart(evt, key));
+      this.borderEl.append(this.cornerControls[key].el);
+    }
     );
   }
 
@@ -56,8 +54,22 @@ export class Borders {
     const el = document.createElement('div');
     el.classList.add('borderEdge', position);
     this.borderEl.appendChild(el);
+    el.addEventListener('mousedown', (evt: MouseEvent) => this.onResizeStart(evt, position));
     return el;
   }
+
+  onResizeStart(evt: MouseEvent, behavior: BorderPosition | CornerPosition) {
+    console.log('onResizeStart', behavior);
+    this.isResize = true;
+    this.resizeBehavior = behavior;
+  }
+
+  cancelResize = () => {
+    console.log('cancelResize');
+    setTimeout(() => {
+      this.isResize = false;
+    }, 0);
+  };
 
   show({ xPos, yPos, width, height }: { xPos: number; yPos: number; width: number; height: number }) {
     this.borderEl.style.display = 'block';

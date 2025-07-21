@@ -29,6 +29,8 @@ export class TextDiv {
   text: string;
   xPos: number;
   yPos: number;
+  width: number | undefined;
+  height: number | undefined;
   isSelected: boolean = true;
   isEdit: boolean = false;
   isDrag: boolean = false;
@@ -89,6 +91,12 @@ export class TextDiv {
     if (this.isEdit) {
       return;
     }
+    const isResize = this.borders.isResize;
+    if (isResize) {
+      console.log('onMouseUp isResize');
+      this.borders.cancelResize();
+      return;
+    }
     // setTimeout to avoid calling setIsEdit before mouseup on click event
     setTimeout(() => {
       if (this.isEdit) {
@@ -122,6 +130,32 @@ export class TextDiv {
       this.el.removeEventListener('mousemove', this.checkDragThreshold);
     }
   };
+
+  resize(evt: MouseEvent) {
+    if (!this.borders.isResize) {
+      return;
+    }
+    if (!this.width) {
+      // temporarily for typescript
+      return;
+    }
+    const resizeBehavior = this.borders.resizeBehavior;
+    const { xPos, yPos } = getCanvasPosition({
+      event: evt,
+      canvasEl: this.borders.borderEl,
+    });
+    if (resizeBehavior === 'right') {
+      this.el.style.width = `${xPos}px`;
+    }
+    if (resizeBehavior === 'bot') {
+      this.el.style.height = `${yPos}px`;
+    }
+    if (resizeBehavior === 'botRight') {
+      this.el.style.width = `${xPos}px`;
+      this.el.style.height = `${yPos}px`;
+    }
+    this.showBorders();
+  }
 
   public moveEl(evt: MouseEvent) {
     const { xPos: xPosCanvas, yPos: yPosCanvas } = getCanvasPosition({
@@ -194,6 +228,10 @@ export class TextDiv {
     }
     this.el.style.left = `${this.xPos}px`;
     this.el.style.top = `${this.yPos}px`;
+    this.el.style.width = `${width}px`;
+    this.el.style.height = `${height}px`;
+    this.width = width;
+    this.height = height;
     this.showBorders();
   }
 }
