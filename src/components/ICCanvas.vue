@@ -58,12 +58,20 @@ export default {
     this.sharedTextBorder = new Borders({ canvasEl: this.canvas });
     this.throttledOnMouseMove = throttle(this.onMouseMove, 20);
     this.canvas.addEventListener('mousemove', this.throttledOnMouseMove);
-    document.addEventListener('mouseup', this.sharedTextBorder.cancelResize);
+    document.addEventListener('mouseup', this.cancelResize);
   },
   onBeforeUnmount() {
     this.canvas.removeEventListener('mousemove', this.throttledOnMouseMove);
   },
   methods: {
+    cancelResize() {
+      if (!this.sharedTextBorder || !this.currentEl) {
+        return;
+      }
+      this.currentEl.xDragStartPos = null;
+      this.currentEl.yDragStartPos = null;
+      this.sharedTextBorder.cancelResize();
+    },
     handleDeselect(evt: MouseEvent) {
       if (evt.target === this.canvasBody) {
         evt.stopImmediatePropagation();

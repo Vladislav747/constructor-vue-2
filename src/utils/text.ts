@@ -29,8 +29,8 @@ export class TextDiv {
   text: string;
   xPos: number;
   yPos: number;
-  width: number | undefined;
-  height: number | undefined;
+  width: number = 0;
+  height: number = 0;
   isSelected: boolean = true;
   isEdit: boolean = false;
   isDrag: boolean = false;
@@ -135,21 +135,64 @@ export class TextDiv {
     if (!this.borders.isResize) {
       return;
     }
-    if (!this.width) {
-      // temporarily for typescript
-      return;
-    }
     const resizeBehavior = this.borders.resizeBehavior;
     const { xPos, yPos } = getElPosition({ evt, el: this.borders.borderEl });
+    const { xPos: xCanvas, yPos: yCanvas } = getElPosition({ evt, el: this.canvasEl });
+    if (this.xDragStartPos === null || this.yDragStartPos === null) {
+      this.xDragStartPos = xCanvas;
+      this.yDragStartPos = yCanvas;
+    }
     if (resizeBehavior === 'right') {
-      this.el.style.width = `${xPos}px`;
+      this.width = xPos;
+      this.el.style.width = `${this.width}px`;
     }
     if (resizeBehavior === 'bot') {
-      this.el.style.height = `${yPos}px`;
+      this.height = yPos;
+      this.el.style.height = `${this.height}px`;
     }
     if (resizeBehavior === 'botRight') {
-      this.el.style.width = `${xPos}px`;
-      this.el.style.height = `${yPos}px`;
+      this.width = xPos;
+      this.height = yPos;
+      this.el.style.width = `${this.width}px`;
+      this.el.style.height = `${this.height}px`;
+    }
+    if (resizeBehavior === 'top') {
+      this.yPos = yCanvas;
+      this.el.style.top = `${this.yPos}px`;
+      this.height = this.height - yPos;
+      this.el.style.height = `${this.height}px`;
+    }
+    if (resizeBehavior === 'left') {
+      this.xPos = xCanvas;
+      this.el.style.left = `${this.xPos}px`;
+      this.width = this.width - xPos;
+      this.el.style.width = `${this.width}px`;
+    }
+    if (resizeBehavior === 'topLeft') {
+      this.yPos = yCanvas;
+      this.xPos = xCanvas;
+      this.el.style.top = `${this.yPos}px`;
+      this.el.style.left = `${this.xPos}px`;
+      this.height = this.height - yPos;
+      this.width = this.width - xPos;
+      this.el.style.height = `${this.height}px`;
+      this.el.style.width = `${this.width}px`;
+    }
+    if (resizeBehavior === 'topRight') {
+      this.yPos = yCanvas;
+      this.el.style.top = `${this.yPos}px`;
+      this.height = this.height - yPos;
+      this.width = xPos;
+      this.el.style.height = `${this.height}px`;
+      this.el.style.width = `${this.width}px`;
+    }
+    if (resizeBehavior === 'botLeft') {
+      this.xPos = xCanvas;
+      this.el.style.left = `${this.xPos}px`;
+      this.height = yPos;
+      this.width = this.width - xPos;
+      this.el.style.height = `${this.height}px`;
+      this.el.style.width = `${this.width}px`;
     }
     this.showBorders();
   }
