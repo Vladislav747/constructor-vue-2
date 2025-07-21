@@ -1,4 +1,4 @@
-import { getCanvasPosition } from '@/utils/position';
+import { getElPosition } from '@/utils/position';
 import { Borders } from './borders';
 
 const DRAG_THRESHOLD = 5;
@@ -115,7 +115,7 @@ export class TextDiv {
       this.el.removeEventListener('mousemove', this.checkDragThreshold);
       return;
     }
-    const { xPos, yPos } = getCanvasPosition({ event: evt, canvasEl: this.el });
+    const { xPos, yPos } = getElPosition({ evt, el: this.el });
     if (this.xDragStartPos === null || this.yDragStartPos === null) {
       this.xDragStartPos = xPos;
       this.yDragStartPos = yPos;
@@ -140,10 +140,7 @@ export class TextDiv {
       return;
     }
     const resizeBehavior = this.borders.resizeBehavior;
-    const { xPos, yPos } = getCanvasPosition({
-      event: evt,
-      canvasEl: this.borders.borderEl,
-    });
+    const { xPos, yPos } = getElPosition({ evt, el: this.borders.borderEl });
     if (resizeBehavior === 'right') {
       this.el.style.width = `${xPos}px`;
     }
@@ -158,12 +155,9 @@ export class TextDiv {
   }
 
   public moveEl(evt: MouseEvent) {
-    const { xPos: xPosCanvas, yPos: yPosCanvas } = getCanvasPosition({
-      event: evt,
-      canvasEl: this.canvasEl,
-    });
-    this.xPos = xPosCanvas - (this.xDragStartPos || 0);
-    this.yPos = yPosCanvas - (this.yDragStartPos || 0);
+    const { xPos, yPos } = getElPosition({ evt, el: this.canvasEl });
+    this.xPos = xPos - (this.xDragStartPos || 0);
+    this.yPos = yPos - (this.yDragStartPos || 0);
     this.el.style.left = `${this.xPos}px`;
     this.el.style.top = `${this.yPos}px`;
     this.showBorders();

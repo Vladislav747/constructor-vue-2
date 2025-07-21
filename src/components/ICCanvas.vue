@@ -13,7 +13,7 @@
 import { useInfoConstructor } from '@/stores/InfoConstructor';
 import { downloadAsImage } from '@/utils/extract-image';
 import { TextDiv } from '@/utils/text';
-import { getCanvasPosition } from '@/utils/position';
+import { getElPosition } from '@/utils/position';
 import { Borders } from '@/utils/borders';
 import throttle from 'lodash/throttle';
 
@@ -96,10 +96,7 @@ export default {
       if (this.isDragging || this.isResizing || !this.sharedTextBorder) {
         return;
       }
-      const positions = getCanvasPosition({
-        event: evt,
-        canvasEl: this.canvas,
-      });
+      const positions = getElPosition({ evt, el: this.canvas });
       const newElId = String(Date.now());
       if (this.store.mode === 'text') {
         const div = new TextDiv({
