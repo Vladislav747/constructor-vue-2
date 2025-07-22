@@ -4,7 +4,6 @@ type BorderPosition = 'top' | 'right' | 'bot' | 'left';
 class CornerControl {
   el: HTMLDivElement;
   position: CornerPosition;
-
   constructor(position: CornerPosition) {
     this.position = position;
     this.el = document.createElement('div');
@@ -12,14 +11,48 @@ class CornerControl {
   }
 }
 
-/** Singletone */
+class BorderEdge {
+  el: HTMLDivElement;
+  position: BorderPosition;
+  constructor(position: BorderPosition) {
+    this.position = position;
+    this.el = document.createElement('div');
+    this.el.classList.add('borderEdge', position);
+  }
+}
+
+const createCornerControls = (parent: HTMLElement, onResizeStart: (pos: CornerPosition) => void): Record<CornerPosition, CornerControl> => {
+  const cornerPositions: CornerPosition[] = ['topLeft', 'topRight', 'botLeft', 'botRight'];
+  const controls = {} as Record<CornerPosition, CornerControl>;
+  cornerPositions.forEach((pos) => {
+    const control = new CornerControl(pos);
+    control.el.addEventListener('mousedown', () => onResizeStart(pos));
+    parent.appendChild(control.el);
+    controls[pos] = control;
+  });
+  return controls;
+};
+
+const createBorderEdges = (parent: HTMLElement, onResizeStart: (pos: BorderPosition) => void): Record<BorderPosition, BorderEdge> => {
+  const edgePositions: BorderPosition[] = ['top', 'right', 'bot', 'left'];
+  const edges = {} as Record<BorderPosition, BorderEdge>;
+  edgePositions.forEach((pos) => {
+    const edge = new BorderEdge(pos);
+    edge.el.addEventListener('mousedown', () => onResizeStart(pos));
+    parent.appendChild(edge.el);
+    edges[pos] = edge;
+  });
+  return edges;
+};
+
+/** Singleton */
 export class Borders {
   canvasEl: HTMLDivElement;
   borderEl: HTMLDivElement;
-  borderEdges: Record<BorderPosition, HTMLDivElement>;
+  borderEdges: Record<BorderPosition, BorderEdge>;
   cornerControls: Record<CornerPosition, CornerControl>;
   isResize: boolean = false;
-  resizeBehavior: BorderPosition | CornerPosition= 'top';
+  resizeBehavior: BorderPosition | CornerPosition = 'top';
 
   constructor({ canvasEl }: { canvasEl: HTMLDivElement }) {
     this.borderEl = document.createElement('div');
@@ -27,45 +60,16 @@ export class Borders {
     this.canvasEl = canvasEl;
     this.canvasEl.appendChild(this.borderEl);
 
-    this.borderEdges = {
-      top: this.createEdge('top'),
-      right: this.createEdge('right'),
-      bot: this.createEdge('bot'),
-      left: this.createEdge('left'),
-    };
-
-    this.cornerControls = {
-      topLeft: new CornerControl('topLeft'),
-      topRight: new CornerControl('topRight'),
-      botLeft: new CornerControl('botLeft'),
-      botRight: new CornerControl('botRight'),
-    };
-
-    (Object.keys(this.cornerControls) as CornerPosition[]).forEach((key: CornerPosition) =>
-    {
-      const el = this.cornerControls[key].el;
-      el.addEventListener('mousedown', (evt: MouseEvent) => this.onResizeStart(evt, key));
-      this.borderEl.append(this.cornerControls[key].el);
-    }
-    );
+    this.borderEdges = createBorderEdges(this.borderEl, this.onResizeStart);
+    this.cornerControls = createCornerControls(this.borderEl, this.onResizeStart);
   }
 
-  createEdge(position: BorderPosition): HTMLDivElement {
-    const el = document.createElement('div');
-    el.classList.add('borderEdge', position);
-    this.borderEl.appendChild(el);
-    el.addEventListener('mousedown', (evt: MouseEvent) => this.onResizeStart(evt, position));
-    return el;
-  }
-
-  onResizeStart(evt: MouseEvent, behavior: BorderPosition | CornerPosition) {
-    console.log('onResizeStart', behavior);
+  onResizeStart = (behavior: BorderPosition | CornerPosition) => {
     this.isResize = true;
     this.resizeBehavior = behavior;
-  }
+  };
 
   cancelResize = () => {
-    console.log('cancelResize');
     setTimeout(() => {
       this.isResize = false;
     }, 0);
