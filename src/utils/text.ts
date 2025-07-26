@@ -3,6 +3,16 @@ import { Borders } from './borders';
 
 const DRAG_THRESHOLD = 5;
 
+const getDragThreshold = (): number => {
+  // Высокие DPI
+  if (window.devicePixelRatio > 2) {
+    return 8;
+  }
+  
+  // Стандартные устройства
+  return 5;
+};
+
 export type TextDivProperties = {
   id: string;
   canvasEl: HTMLDivElement;
@@ -51,6 +61,7 @@ export class TextDiv {
     // Adding basics
     this.el.classList.add('divText');
     this.el.addEventListener('click', (evt: MouseEvent) => {
+      console.log('event click');
       evt.stopImmediatePropagation();
       if (this.isDrag) {
         return;
@@ -99,6 +110,7 @@ export class TextDiv {
     }
     // setTimeout to avoid calling setIsEdit before mouseup on click event
     setTimeout(() => {
+      console.log('onMouseUp setTimeout');
       if (this.isEdit) {
         return;
       }

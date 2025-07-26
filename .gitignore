@@ -25,3 +25,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+ANALYSIS_CONCEPT.adoc
+analysis_last.adoc
