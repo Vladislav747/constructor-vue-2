@@ -1,9 +1,10 @@
 <template>
-  <div ref="canvasBody" :class="$style.body" @click="handleDeselect">
+  <div ref="canvasBody" :class="$style.body" data-canvas-area="body" @click="handleDeselect">
     <div
       ref="canvas"
       :class="[$style.canvas, store.mode === 'text' && $style.modeText]"
       :style="canvasBg"
+      data-canvas-area="canvas"
       @click="addElement"
     />
   </div>
@@ -52,7 +53,7 @@ export default {
   watch: {
     'store.textarea'(text: string) {
       if (this.currentEl && document.activeElement !== this.currentEl.el && this.store.mode === "text") {
-        this.currentEl.updateText(text);
+        (this.currentEl as any).updateText(text);
       }
     },
   },
@@ -75,9 +76,21 @@ export default {
       this.sharedTextBorder.cancelResize();
     },
     handleDeselect(evt: MouseEvent) {
-      if (evt.target === this.canvasBody) {
+      console.log('handleDeselect', evt.target);
+      
+      const target = evt.target as HTMLElement;
+      const canvasArea = target?.dataset?.canvasArea;
+      
+      console.log('canvasArea:', canvasArea);
+      console.log('target:', target);
+      
+      // Проверяем кликнули ли по области холста (body или canvas), но не по элементам
+      if (canvasArea === 'body' || canvasArea === 'canvas') {
+        console.log('handleDeselect: clicked on canvas area');
         evt.stopImmediatePropagation();
+        
         if (this.currentEl) {
+          console.log('handleDeselect: deselecting current element');
           this.currentEl.deselect();
           this.sharedTextBorder?.hide();
         }
