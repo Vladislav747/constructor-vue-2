@@ -5,6 +5,7 @@
       :setImage="setImage" 
       :whenDownloadAsAnImage="downloadHtmlAsImage"
       @icon-selected="onIconSelected"
+      @font-size-changed="onFontSizeChanged"
     />
   </div>
 </template>
@@ -44,6 +45,14 @@ export default {
       const canvasRef = this.$refs.ICCanvas as InstanceType<typeof ICCanvas>;
       if (canvasRef && canvasRef.addIconToCenter) {
         canvasRef.addIconToCenter(iconData);
+      }
+    },
+    
+    onFontSizeChanged(fontSize: number) {
+      console.log('Font size changed in wrapper:', fontSize);
+      const canvasRef = this.$refs.ICCanvas as InstanceType<typeof ICCanvas>;
+      if (canvasRef && canvasRef.updateSelectedTextFontSize) {
+        canvasRef.updateSelectedTextFontSize(fontSize);
       }
     },
   },

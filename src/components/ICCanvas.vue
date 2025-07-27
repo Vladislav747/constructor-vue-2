@@ -129,6 +129,7 @@ export default {
           canvasEl: this.canvas,
           borders: this.sharedTextBorder,
           text: this.store.textarea,
+          fontSize: this.store.fontSize,
           inputFn: this.store.changeTextarea,
           selectEl: this.selectEl,
           onDragStart: this.onDragStart,
@@ -175,6 +176,16 @@ export default {
     downloadAsImage() {
       if (this.canvasBody) {
         downloadAsImage(this.canvasBody);
+      }
+    },
+    
+    updateSelectedTextFontSize(fontSize: number) {
+      console.log('Updating font size to:', fontSize);
+      if (this.currentEl && this.store.mode === 'text') {
+        // Проверяем что это текстовый элемент
+        if ('updateFontSize' in this.currentEl) {
+          (this.currentEl as any).updateFontSize(fontSize);
+        }
       }
     },
   },

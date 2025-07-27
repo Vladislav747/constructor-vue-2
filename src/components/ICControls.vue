@@ -27,7 +27,7 @@
       <!-- Таб "Текст" -->
       <div v-if="store.mode === 'text'" :class="$style.textTab">
         <h3 :class="$style.sectionTitle">Настройки текста</h3>
-        <TextControls />
+        <TextControls @font-size-changed="onFontSizeChanged" />
       </div>
 
       <!-- Таб "Иконки" -->
@@ -135,6 +135,12 @@ export default {
         iconName: iconName,
         iconComponent: currentIcon[0]?.component
       });
+    },
+    
+    onFontSizeChanged(fontSize: number) {
+      console.log('Font size changed in controls:', fontSize);
+      // Эмитим событие наверх к ICWrapper
+      this.$emit('font-size-changed', fontSize);
     },
   },
 };

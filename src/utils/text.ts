@@ -20,6 +20,7 @@ export type TextDivProperties = {
   text: string;
   xPos: number;
   yPos: number;
+  fontSize?: number;
   inputFn: (value: string) => void;
   selectEl: (id: string) => void;
   onDragStart: (id: string) => void;
@@ -49,7 +50,7 @@ export class TextDiv {
   xDragStartPos: null | number = null;
   yDragStartPos: null | number = null;
 
-  constructor({ id, canvasEl, borders, text, xPos, yPos, inputFn, selectEl, onDragStart, onDragEnd }: TextDivProperties) {
+  constructor({ id, canvasEl, borders, text, xPos, yPos, fontSize = 16, inputFn, selectEl, onDragStart, onDragEnd }: TextDivProperties) {
     this.id = id;
     this.canvasEl = canvasEl;
     this.xPos = xPos;
@@ -95,6 +96,7 @@ export class TextDiv {
     this.el.textContent = text;
     this.el.style.left = `${xPos}px`;
     this.el.style.top = `${yPos}px`;
+    this.el.style.fontSize = `${fontSize}px`;
   }
 
   onMouseUp = () => {
@@ -222,6 +224,15 @@ export class TextDiv {
     this.text = text;
     this.el.innerText = text;
     this.showBorders();
+  }
+
+  public updateFontSize(fontSize: number) {
+    console.log('TextDiv: updating font size to', fontSize);
+    this.el.style.fontSize = `${fontSize}px`;
+    // Обновляем границы так как размер элемента мог измениться
+    setTimeout(() => {
+      this.showBorders();
+    }, 0);
   }
 
   showBorders() {
