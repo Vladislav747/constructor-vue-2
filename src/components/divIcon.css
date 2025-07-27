@@ -1,0 +1,16 @@
+.divIcon {
+    position: absolute;
+    display: inline-block;
+    padding: 8px;
+    word-break: break-all;
+    cursor: default;
+    background-color: rgb(147, 251, 147); /* temporarily */
+  }
+  
+  .divIcon.isDragging {
+    cursor: move;
+  }
+  
+  .divIcon:focus {
+    outline: transparent;
+  }

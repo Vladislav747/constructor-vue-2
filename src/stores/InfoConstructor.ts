@@ -13,5 +13,8 @@ export const useInfoConstructor = defineStore('IGConstructor', {
     changeTextarea(value: string) {
       this.textarea = value;
     },
+    changeMode(mode: ICMode) {
+      this.mode = mode;
+    },
   },
 });

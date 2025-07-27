@@ -4,7 +4,7 @@
       ref="canvas"
       :class="[$style.canvas, store.mode === 'text' && $style.modeText]"
       :style="canvasBg"
-      @click="addTextEl"
+      @click="addElement"
     />
   </div>
 </template>
@@ -13,8 +13,10 @@
 import { useInfoConstructor } from '@/stores/InfoConstructor';
 import { downloadAsImage } from '@/utils/extract-image';
 import { TextDiv } from '@/utils/text';
-import { getElPosition } from '@/utils/position';
+import { IconDiv } from '@/utils/icons';
+import { getElPosition, getCenterPosition } from '@/utils/position';
 import { Borders } from '@/utils/borders';
+import type { SelectedIcon } from './types';
 import throttle from 'lodash/throttle';
 
 export default {
@@ -28,8 +30,8 @@ export default {
   data: () => ({
     store: useInfoConstructor(),
     sharedTextBorder: null as null | Borders,
-    elements: {} as Record<string, TextDiv>,
-    currentEl: null as null | TextDiv,
+    elements: {} as Record<string, TextDiv | IconDiv>,
+    currentEl: null as null | TextDiv | IconDiv,
     isDragging: false,
     throttledOnMouseMove: (evt: MouseEvent) => {},
   }),
@@ -98,14 +100,17 @@ export default {
         this.currentEl.deselect();
       }
       this.currentEl = this.elements[id];
-      this.store.changeTextarea(this.currentEl.text);
+      if(this.store.mode === "text"){
+        this.store.changeTextarea(this.currentEl.text);
+      }
     },
-    addTextEl(evt: MouseEvent) {
+    addElement(evt: MouseEvent) {
       if (this.isDragging || this.isResizing || !this.sharedTextBorder) {
         return;
       }
       const positions = getElPosition({ evt, el: this.canvas });
       const newElId = String(Date.now());
+      
       if (this.store.mode === 'text') {
         const div = new TextDiv({
           id: newElId,
@@ -123,6 +128,27 @@ export default {
         this.selectEl(newElId);
         return;
       }
+    },
+    
+    addIconToCenter(selectedIcon: SelectedIcon) {
+      if (!selectedIcon) return;
+
+      const centerPositions = getCenterPosition({el: this.canvas})
+      const newElId = String(Date.now());
+      
+      const iconDiv = new IconDiv({
+        id: newElId,
+        canvasEl: this.canvas,
+        iconName: selectedIcon.iconName,
+        ...centerPositions,
+      });
+
+
+      this.elements[newElId] = iconDiv;
+      iconDiv.append();
+      this.selectEl(newElId);
+      
+      console.log('Icon added to center:', selectedIcon);
     },
     onDragStart() {
       this.isDragging = true;
@@ -166,4 +192,5 @@ export default {
 </style>
 
 <style src="./divText.css" />
+<style src="./divIcon.css" />
 <style src="./borders.css" />

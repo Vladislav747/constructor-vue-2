@@ -46,6 +46,7 @@ import IconDocumentation from './other/icons/IconDocumentation.vue';
 import IconEcosystem from './other/icons/IconEcosystem.vue';
 import IconSupport from './other/icons/IconSupport.vue';
 import IconTooling from './other/icons/IconTooling.vue';
+import { useInfoConstructor } from '@/stores/InfoConstructor';
 
 export default {
   components: {
@@ -68,6 +69,7 @@ export default {
   },
   data() {
     return {
+      store: useInfoConstructor(),
       icons: [
         { name: 'Community', component: 'IconCommunity' },
         { name: 'Documentation', component: 'IconDocumentation' },
@@ -84,6 +86,15 @@ export default {
       const currentIcon = this.icons.filter(({name}) => name === iconName);
       console.log(currentIcon, "currentIcon");
       this.activeIconName = currentIcon[0]?.name;
+      
+      // Переключаем в режим иконки
+      this.store.changeMode('icon');
+      
+      // Эмитим событие с данными иконки
+      this.$emit('icon-selected', {
+        iconName: iconName,
+        iconComponent: currentIcon[0]?.component
+      });
     },
   },
 };

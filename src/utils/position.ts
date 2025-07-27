@@ -8,3 +8,15 @@ export const getElPosition = ({ evt, el }: { evt: MouseEvent; el: HTMLElement })
     yPos,
   };
 };
+
+
+export const getCenterPosition = ({ el }: { el: HTMLElement }): { xPos: number; yPos: number } => {
+  const rect = el.getBoundingClientRect();
+
+  const xPos = Math.floor(rect.width / 2) || 0;
+  const yPos = Math.floor(rect.height / 2) || 0;
+  return {
+    xPos,
+    yPos,
+  };
+};
