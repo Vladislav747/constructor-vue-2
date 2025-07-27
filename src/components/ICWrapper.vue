@@ -6,6 +6,7 @@
       :whenDownloadAsAnImage="downloadHtmlAsImage"
       @icon-selected="onIconSelected"
       @font-size-changed="onFontSizeChanged"
+      @icon-color-changed="onIconColorChanged"
     />
   </div>
 </template>
@@ -53,6 +54,14 @@ export default {
       const canvasRef = this.$refs.ICCanvas as InstanceType<typeof ICCanvas>;
       if (canvasRef && canvasRef.updateSelectedTextFontSize) {
         canvasRef.updateSelectedTextFontSize(fontSize);
+      }
+    },
+    
+    onIconColorChanged(color: string) {
+      console.log('Icon color changed in wrapper:', color);
+      const canvasRef = this.$refs.ICCanvas as InstanceType<typeof ICCanvas>;
+      if (canvasRef && canvasRef.updateSelectedIconColor) {
+        canvasRef.updateSelectedIconColor(color);
       }
     },
   },

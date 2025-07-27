@@ -6,10 +6,12 @@ export const useInfoConstructor = defineStore('IGConstructor', {
     mode: ICMode;
     textarea: string;
     fontSize: number;
+    iconColor: string;
   } => ({
     mode: 'text',
     textarea: 'Ваш текст',
     fontSize: 16,
+    iconColor: '#333333',
   }),
   actions: {
     changeTextarea(value: string) {
@@ -20,6 +22,9 @@ export const useInfoConstructor = defineStore('IGConstructor', {
     },
     changeFontSize(size: number) {
       this.fontSize = size;
+    },
+    changeIconColor(color: string) {
+      this.iconColor = color;
     },
   },
 });

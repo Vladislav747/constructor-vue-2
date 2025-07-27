@@ -32,6 +32,9 @@
 
       <!-- Таб "Иконки" -->
       <div v-if="store.mode === 'icon'" :class="$style.iconTab">
+        <h3 :class="$style.sectionTitle">Настройки иконки</h3>
+        <IconControls @icon-color-changed="onIconColorChanged" />
+        
         <h3 :class="$style.sectionTitle">Выберите иконку</h3>
         <div :class="$style.iconsList">
           <button 
@@ -70,6 +73,7 @@
 
 <script lang="ts">
 import TextControls from './TextControls.vue';
+import IconControls from './IconControls.vue';
 import IconCommunity from './other/icons/IconCommunity.vue';
 import IconDocumentation from './other/icons/IconDocumentation.vue';
 import IconEcosystem from './other/icons/IconEcosystem.vue';
@@ -80,6 +84,7 @@ import { useInfoConstructor } from '@/stores/InfoConstructor';
 export default {
   components: {
     TextControls,
+    IconControls,
     IconCommunity,
     IconDocumentation,
     IconEcosystem,
@@ -141,6 +146,12 @@ export default {
       console.log('Font size changed in controls:', fontSize);
       // Эмитим событие наверх к ICWrapper
       this.$emit('font-size-changed', fontSize);
+    },
+    
+    onIconColorChanged(color: string) {
+      console.log('Icon color changed in controls:', color);
+      // Эмитим событие наверх к ICWrapper
+      this.$emit('icon-color-changed', color);
     },
   },
 };

@@ -154,6 +154,7 @@ export default {
         canvasEl: this.canvas,
         borders: this.sharedTextBorder!,
         iconName: selectedIcon.iconName,
+        iconColor: this.store.iconColor,
         selectEl: this.selectEl,
         onDragStart: this.onDragStart,
         onDragEnd: this.onDragEnd,
@@ -185,6 +186,16 @@ export default {
         // Проверяем что это текстовый элемент
         if ('updateFontSize' in this.currentEl) {
           (this.currentEl as any).updateFontSize(fontSize);
+        }
+      }
+    },
+    
+    updateSelectedIconColor(color: string) {
+      console.log('Updating icon color to:', color);
+      if (this.currentEl && this.store.mode === 'icon') {
+        // Проверяем что это иконка
+        if ('updateColor' in this.currentEl) {
+          (this.currentEl as any).updateColor(color);
         }
       }
     },

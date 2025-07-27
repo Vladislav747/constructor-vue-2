@@ -30,6 +30,7 @@ export type IconDivProperties = {
   iconName: IconName;
   xPos: number;
   yPos: number;
+  iconColor?: string;
   selectEl: (id: string) => void;
   onDragStart: (id: string) => void;
   onDragEnd: (id: string) => void;
@@ -40,6 +41,7 @@ export class IconDiv {
   canvasEl: HTMLDivElement;
   borders: Borders;
   el: HTMLDivElement = document.createElement('div');
+  svgContainer: HTMLDivElement = document.createElement('div');
   iconName: IconName;
   xPos: number;
   yPos: number;
@@ -59,6 +61,7 @@ export class IconDiv {
     iconName,
     xPos,
     yPos,
+    iconColor = '#333333',
     selectEl,
     onDragStart,
     onDragEnd,
@@ -98,14 +101,13 @@ export class IconDiv {
     this.el.addEventListener('mouseup', this.onMouseUp);
 
     // Создаем контейнер для SVG иконки
-    const svgContainer = document.createElement('div');
-    svgContainer.style.color = '#333';
-    svgContainer.style.display = 'flex';
-    svgContainer.style.alignItems = 'center';
-    svgContainer.style.justifyContent = 'center';
-    svgContainer.innerHTML = getIconSvg(this.iconName);
+    this.svgContainer.style.color = iconColor;
+    this.svgContainer.style.display = 'flex';
+    this.svgContainer.style.alignItems = 'center';
+    this.svgContainer.style.justifyContent = 'center';
+    this.svgContainer.innerHTML = getIconSvg(this.iconName);
     
-    this.el.appendChild(svgContainer);
+    this.el.appendChild(this.svgContainer);
   }
 
   onMouseUp = () => {
@@ -237,6 +239,11 @@ export class IconDiv {
 
   public deselect() {
     this.isSelected = false;
+  }
+
+  public updateColor(color: string) {
+    console.log('IconDiv: updating color to', color);
+    this.svgContainer.style.color = color;
   }
 
   append() {
