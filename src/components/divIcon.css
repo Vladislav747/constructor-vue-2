@@ -1,16 +1,25 @@
 .divIcon {
-    position: absolute;
-    display: inline-block;
-    padding: 8px;
-    word-break: break-all;
-    cursor: default;
-    background-color: rgb(147, 251, 147); /* temporarily */
-  }
-  
-  .divIcon.isDragging {
-    cursor: move;
-  }
-  
-  .divIcon:focus {
-    outline: transparent;
-  }
+  position: absolute;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.divIcon:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+.divIcon.isDragging {
+  opacity: 0.8;
+  z-index: 1000;
+  cursor: move;
+}

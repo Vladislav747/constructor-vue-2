@@ -51,7 +51,7 @@ export default {
   },
   watch: {
     'store.textarea'(text: string) {
-      if (this.currentEl && document.activeElement !== this.currentEl.el) {
+      if (this.currentEl && document.activeElement !== this.currentEl.el && this.store.mode === "text") {
         this.currentEl.updateText(text);
       }
     },
@@ -101,7 +101,7 @@ export default {
       }
       this.currentEl = this.elements[id];
       if(this.store.mode === "text"){
-        this.store.changeTextarea(this.currentEl.text);
+        this.store.changeTextarea((this.currentEl as any).text);
       }
     },
     addElement(evt: MouseEvent) {
@@ -139,7 +139,11 @@ export default {
       const iconDiv = new IconDiv({
         id: newElId,
         canvasEl: this.canvas,
+        borders: this.sharedTextBorder,
         iconName: selectedIcon.iconName,
+        selectEl: this.selectEl,
+        onDragStart: this.onDragStart,
+        onDragEnd: this.onDragEnd,
         ...centerPositions,
       });
 
