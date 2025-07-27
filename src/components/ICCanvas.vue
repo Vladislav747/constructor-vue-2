@@ -90,7 +90,6 @@ export default {
         evt.stopImmediatePropagation();
         
         if (this.currentEl) {
-          console.log('handleDeselect: deselecting current element');
           this.currentEl.deselect();
           this.sharedTextBorder?.hide();
         }
@@ -152,7 +151,7 @@ export default {
       const iconDiv = new IconDiv({
         id: newElId,
         canvasEl: this.canvas,
-        borders: this.sharedTextBorder,
+        borders: this.sharedTextBorder!,
         iconName: selectedIcon.iconName,
         selectEl: this.selectEl,
         onDragStart: this.onDragStart,

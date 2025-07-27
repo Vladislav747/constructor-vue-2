@@ -1,38 +1,67 @@
 <template>
   <div :class="$style.body">
-    controls
-    <button @click="whenDownloadAsAnImage()">
-      download
-    </button>
-    <br>
-    <br>
-    <button @click="setImage('/img/perfect-3x4.jpg')">
-      perfect-3x4
-    </button>
-    <button @click="setImage('/img/wide-greybg-macbook.jpg')">
-      wide-greybg-macbook
-    </button>
-    <button @click="setImage('/img/narrow-macbook.jpg')">
-      narrow-macbook
-    </button>
-     <br>
-      <br>
-    <TextControls />
-    <br>
-    <div :class="$style.iconsSection">
-      <h3>Иконки:</h3>
-      <div :class="$style.iconsList">
-        <button 
-          v-for="icon in icons" 
-          :key="icon.name"
-          :class="[
-            $style.iconButton, 
-            { [$style.activeIcon]: icon.name === activeIconName }
-          ]"
-          @click="selectIcon(icon.name)"
-        >
-          <component :is="icon.component" />
-          <span>{{ icon.name }}</span>
+    <div :class="$style.header">
+      <button @click="whenDownloadAsAnImage()" :class="$style.downloadButton">
+        Скачать
+      </button>
+    </div>
+    
+    <!-- Табы -->
+    <div :class="$style.tabs">
+      <button 
+        :class="[$style.tab, { [$style.activeTab]: store.mode === 'text' }]"
+        @click="switchToTextMode"
+      >
+        📝 Текст
+      </button>
+      <button 
+        :class="[$style.tab, { [$style.activeTab]: store.mode === 'icon' }]"
+        @click="switchToIconMode"
+      >
+        🎨 Иконки
+      </button>
+    </div>
+
+    <!-- Контент табов -->
+    <div :class="$style.tabContent">
+      <!-- Таб "Текст" -->
+      <div v-if="store.mode === 'text'" :class="$style.textTab">
+        <h3 :class="$style.sectionTitle">Настройки текста</h3>
+        <TextControls />
+      </div>
+
+      <!-- Таб "Иконки" -->
+      <div v-if="store.mode === 'icon'" :class="$style.iconTab">
+        <h3 :class="$style.sectionTitle">Выберите иконку</h3>
+        <div :class="$style.iconsList">
+          <button 
+            v-for="icon in icons" 
+            :key="icon.name"
+            :class="[
+              $style.iconButton, 
+              { [$style.activeIcon]: icon.name === activeIconName }
+            ]"
+            @click="selectIcon(icon.name)"
+          >
+            <component :is="icon.component" />
+            <span>{{ icon.name }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Образцы изображений -->
+    <div :class="$style.imagesSection">
+      <h3 :class="$style.sectionTitle">Фоновые изображения</h3>
+      <div :class="$style.imageButtons">
+        <button @click="setImage('/img/perfect-3x4.jpg')" :class="$style.imageButton">
+          Perfect 3x4
+        </button>
+        <button @click="setImage('/img/wide-greybg-macbook.jpg')" :class="$style.imageButton">
+          Wide MacBook
+        </button>
+        <button @click="setImage('/img/narrow-macbook.jpg')" :class="$style.imageButton">
+          Narrow MacBook
         </button>
       </div>
     </div>
@@ -81,14 +110,25 @@ export default {
     };
   },
   methods: {
+    switchToTextMode() {
+      this.store.changeMode('text');
+      this.activeIconName = ""; // Сбрасываем выбранную иконку
+    },
+    
+    switchToIconMode() {
+      this.store.changeMode('icon');
+    },
+    
     selectIcon(iconName: string) {
       console.log('Selected icon:', iconName);
       const currentIcon = this.icons.filter(({name}) => name === iconName);
       console.log(currentIcon, "currentIcon");
       this.activeIconName = currentIcon[0]?.name;
       
-      // Переключаем в режим иконки
-      this.store.changeMode('icon');
+      // Убеждаемся что мы в режиме иконки
+      if (this.store.mode !== 'icon') {
+        this.store.changeMode('icon');
+      }
       
       // Эмитим событие с данными иконки
       this.$emit('icon-selected', {
@@ -103,20 +143,95 @@ export default {
 <style module>
 .body {
   border: 4px solid #ABBCD51F;
-  border-radius: 4px;
+  border-radius: 8px;
   padding: 16px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.iconsSection {
-  margin-top: 16px;
+.header {
+  margin-bottom: 16px;
+  text-align: center;
 }
 
-.iconsSection h3 {
+.downloadButton {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.downloadButton:hover {
+  background: #218838;
+}
+
+/* Табы */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 2px solid #f1f3f4;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  font-weight: 500;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.tab:hover {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.activeTab {
+  background: #007bff !important;
+  color: white !important;
+}
+
+.activeTab::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #007bff;
+}
+
+/* Контент табов */
+.tabContent {
+  min-height: 200px;
+}
+
+.textTab, .iconTab {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sectionTitle {
   margin: 0 0 12px 0;
   font-size: 16px;
   font-weight: 600;
+  color: #333;
 }
 
+/* Иконки */
 .iconsList {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -155,5 +270,34 @@ export default {
 
 .activeIcon svg {
   color: #007bff;
+}
+
+/* Изображения */
+.imagesSection {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.imageButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.imageButton {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-size: 14px;
+}
+
+.imageButton:hover {
+  border-color: #007bff;
+  background: #f8f9fa;
 }
 </style>

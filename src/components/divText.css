@@ -3,8 +3,13 @@
   display: inline-block;
   padding: 8px;
   word-break: break-all;
-  cursor: default;
+  cursor: pointer;
   background-color: rgb(147, 251, 147); /* temporarily */
+}
+
+.divText:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
 }
 
 .divText[contenteditable='true'] {
