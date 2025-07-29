@@ -6,6 +6,12 @@
       </button>
     </div>
     
+    <!-- История изменений -->
+    <HistoryControls 
+      @history-changed="onHistoryChanged"
+      @reset-to-initial="onResetToInitial"
+    />
+    
     <!-- Табы -->
     <div :class="$style.tabs">
       <button 
@@ -74,6 +80,7 @@
 <script lang="ts">
 import TextControls from './TextControls.vue';
 import IconControls from './IconControls.vue';
+import HistoryControls from './HistoryControls.vue';
 import IconCommunity from './other/icons/IconCommunity.vue';
 import IconDocumentation from './other/icons/IconDocumentation.vue';
 import IconEcosystem from './other/icons/IconEcosystem.vue';
@@ -85,6 +92,7 @@ export default {
   components: {
     TextControls,
     IconControls,
+    HistoryControls,
     IconCommunity,
     IconDocumentation,
     IconEcosystem,
@@ -152,6 +160,18 @@ export default {
       console.log('Icon color changed in controls:', color);
       // Эмитим событие наверх к ICWrapper
       this.$emit('icon-color-changed', color);
+    },
+    
+    onHistoryChanged(action: string) {
+      console.log('History action in controls:', action);
+      // Эмитим событие наверх к ICWrapper
+      this.$emit('history-changed', action);
+    },
+    
+    onResetToInitial() {
+      console.log('Reset to initial in controls');
+      // Эмитим событие наверх к ICWrapper
+      this.$emit('reset-to-initial');
     },
   },
 };

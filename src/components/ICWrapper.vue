@@ -7,6 +7,8 @@
       @icon-selected="onIconSelected"
       @font-size-changed="onFontSizeChanged"
       @icon-color-changed="onIconColorChanged"
+      @history-changed="onHistoryChanged"
+      @reset-to-initial="onResetToInitial"
     />
   </div>
 </template>
@@ -62,6 +64,23 @@ export default {
       const canvasRef = this.$refs.ICCanvas as InstanceType<typeof ICCanvas>;
       if (canvasRef && canvasRef.updateSelectedIconColor) {
         canvasRef.updateSelectedIconColor(color);
+      }
+    },
+    
+    onHistoryChanged(action: string) {
+      console.log('History action in wrapper:', action);
+      const canvasRef = this.$refs.ICCanvas as InstanceType<typeof ICCanvas>;
+      if (canvasRef) {
+        // Обновляем отображение после изменения истории
+        canvasRef.refreshDisplay();
+      }
+    },
+    
+    onResetToInitial() {
+      console.log('Reset to initial in wrapper');
+      const canvasRef = this.$refs.ICCanvas as InstanceType<typeof ICCanvas>;
+      if (canvasRef && canvasRef.resetToInitial) {
+        canvasRef.resetToInitial();
       }
     },
   },

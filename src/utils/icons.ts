@@ -34,6 +34,9 @@ export type IconDivProperties = {
   selectEl: (id: string) => void;
   onDragStart: (id: string) => void;
   onDragEnd: (id: string) => void;
+  onPropertiesChanged?: (elementId: string, oldProps: any, newProps: any) => void;
+  onMoved?: (elementId: string, oldPos: { xPos: number; yPos: number }, newPos: { xPos: number; yPos: number }) => void;
+  onResized?: (elementId: string, oldSize: { width: number; height: number }, newSize: { width: number; height: number }) => void;
 };
 
 export class IconDiv {
@@ -51,8 +54,12 @@ export class IconDiv {
   isDrag: boolean = false;
   onDragStart: (id: string) => void;
   onDragEnd: (id: string) => void;
+  onPropertiesChanged?: (elementId: string, oldProps: any, newProps: any) => void;
+  onMoved?: (elementId: string, oldPos: { xPos: number; yPos: number }, newPos: { xPos: number; yPos: number }) => void;
+  onResized?: (elementId: string, oldSize: { width: number; height: number }, newSize: { width: number; height: number }) => void;
   xDragStartPos: null | number = null;
   yDragStartPos: null | number = null;
+  dragStartPosition: { xPos: number; yPos: number } | null = null;
 
   constructor({
     id,
@@ -65,6 +72,9 @@ export class IconDiv {
     selectEl,
     onDragStart,
     onDragEnd,
+    onPropertiesChanged,
+    onMoved,
+    onResized,
   }: IconDivProperties) {
     this.id = id;
     this.canvasEl = canvasEl;
@@ -74,6 +84,9 @@ export class IconDiv {
     this.yPos = yPos;
     this.onDragStart = onDragStart;
     this.onDragEnd = onDragEnd;
+    this.onPropertiesChanged = onPropertiesChanged;
+    this.onMoved = onMoved;
+    this.onResized = onResized;
 
     // Настройка базового элемента
     this.el.classList.add('divIcon');
@@ -120,11 +133,21 @@ export class IconDiv {
     }
     // setTimeout to avoid calling setIsEdit before mouseup on click event
     setTimeout(() => {
+      // Отслеживаем завершение перемещения
+      if (this.isDrag && this.dragStartPosition && this.onMoved) {
+        const currentPos = { xPos: this.xPos, yPos: this.yPos };
+        if (this.dragStartPosition.xPos !== currentPos.xPos || 
+            this.dragStartPosition.yPos !== currentPos.yPos) {
+          this.onMoved(this.id, this.dragStartPosition, currentPos);
+        }
+      }
+      
       this.isDrag = false;
       this.onDragEnd(this.id);
       this.el.classList.remove('isDragging');
       this.xDragStartPos = null;
       this.yDragStartPos = null;
+      this.dragStartPosition = null;
     }, 0);
   };
 
@@ -143,6 +166,7 @@ export class IconDiv {
     const dy = this.yDragStartPos - yPos;
     if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) {
       this.isDrag = true;
+      this.dragStartPosition = { xPos: this.xPos, yPos: this.yPos };
       this.onDragStart(this.id);
       this.el.classList.add('isDragging');
       this.el.removeEventListener('mousemove', this.checkDragThreshold);
@@ -243,6 +267,12 @@ export class IconDiv {
 
   public updateColor(color: string) {
     console.log('IconDiv: updating color to', color);
+    const oldColor = this.svgContainer.style.color || '#333333';
+    
+    if (oldColor !== color && this.onPropertiesChanged) {
+      this.onPropertiesChanged(this.id, { color: oldColor }, { color });
+    }
+    
     this.svgContainer.style.color = color;
   }
 

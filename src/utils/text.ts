@@ -25,6 +25,10 @@ export type TextDivProperties = {
   selectEl: (id: string) => void;
   onDragStart: (id: string) => void;
   onDragEnd: (id: string) => void;
+  onTextChanged?: (elementId: string, oldText: string, newText: string) => void;
+  onPropertiesChanged?: (elementId: string, oldProps: any, newProps: any) => void;
+  onMoved?: (elementId: string, oldPos: { xPos: number; yPos: number }, newPos: { xPos: number; yPos: number }) => void;
+  onResized?: (elementId: string, oldSize: { width: number; height: number }, newSize: { width: number; height: number }) => void;
 };
 
 /** TODO: redo in "left" and "top" properties
@@ -47,10 +51,19 @@ export class TextDiv {
   isDrag: boolean = false;
   onDragStart: (id: string) => void;
   onDragEnd: (id: string) => void;
+  onTextChanged?: (elementId: string, oldText: string, newText: string) => void;
+  onPropertiesChanged?: (elementId: string, oldProps: any, newProps: any) => void;
+  onMoved?: (elementId: string, oldPos: { xPos: number; yPos: number }, newPos: { xPos: number; yPos: number }) => void;
+  onResized?: (elementId: string, oldSize: { width: number; height: number }, newSize: { width: number; height: number }) => void;
   xDragStartPos: null | number = null;
   yDragStartPos: null | number = null;
+  dragStartPosition: { xPos: number; yPos: number } | null = null;
+  resizeStartSize: { width: number; height: number } | null = null;
 
-  constructor({ id, canvasEl, borders, text, xPos, yPos, fontSize = 16, inputFn, selectEl, onDragStart, onDragEnd }: TextDivProperties) {
+  constructor({ 
+    id, canvasEl, borders, text, xPos, yPos, fontSize = 16, inputFn, selectEl, onDragStart, onDragEnd,
+    onTextChanged, onPropertiesChanged, onMoved, onResized 
+  }: TextDivProperties) {
     this.id = id;
     this.canvasEl = canvasEl;
     this.xPos = xPos;
@@ -58,6 +71,10 @@ export class TextDiv {
     this.borders = borders;
     this.onDragStart = onDragStart;
     this.onDragEnd = onDragEnd;
+    this.onTextChanged = onTextChanged;
+    this.onPropertiesChanged = onPropertiesChanged;
+    this.onMoved = onMoved;
+    this.onResized = onResized;
 
     // Adding basics
     this.el.classList.add('divText');
@@ -86,7 +103,14 @@ export class TextDiv {
     this.el.addEventListener('mouseup', this.onMouseUp);
 
     this.el.addEventListener('input', () => {
-      this.text = this.el.innerText;
+      const newText = this.el.innerText;
+      const oldText = this.text;
+      
+      if (oldText !== newText && this.onTextChanged) {
+        this.onTextChanged(this.id, oldText, newText);
+      }
+      
+      this.text = newText;
       inputFn(this.text);
       this.showBorders();
     });
@@ -116,11 +140,22 @@ export class TextDiv {
       if (this.isEdit) {
         return;
       }
+      
+      // Отслеживаем завершение перемещения
+      if (this.isDrag && this.dragStartPosition && this.onMoved) {
+        const currentPos = { xPos: this.xPos, yPos: this.yPos };
+        if (this.dragStartPosition.xPos !== currentPos.xPos || 
+            this.dragStartPosition.yPos !== currentPos.yPos) {
+          this.onMoved(this.id, this.dragStartPosition, currentPos);
+        }
+      }
+      
       this.isDrag = false;
       this.onDragEnd(this.id);
       this.el.classList.remove('isDragging');
       this.xDragStartPos = null;
       this.yDragStartPos = null;
+      this.dragStartPosition = null;
     }, 0);
   };
 
@@ -139,6 +174,7 @@ export class TextDiv {
     const dy = this.yDragStartPos - yPos;
     if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) {
       this.isDrag = true;
+      this.dragStartPosition = { xPos: this.xPos, yPos: this.yPos };
       this.onDragStart(this.id);
       this.el.classList.add('isDragging');
       this.el.removeEventListener('mousemove', this.checkDragThreshold);
@@ -228,6 +264,12 @@ export class TextDiv {
 
   public updateFontSize(fontSize: number) {
     console.log('TextDiv: updating font size to', fontSize);
+    const oldFontSize = parseInt(this.el.style.fontSize) || 16;
+    
+    if (oldFontSize !== fontSize && this.onPropertiesChanged) {
+      this.onPropertiesChanged(this.id, { fontSize: oldFontSize }, { fontSize });
+    }
+    
     this.el.style.fontSize = `${fontSize}px`;
     // Обновляем границы так как размер элемента мог измениться
     setTimeout(() => {
