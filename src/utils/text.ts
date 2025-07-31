@@ -9,7 +9,7 @@ const getDragThreshold = (): number => {
   if (window.devicePixelRatio > 2) {
     return 8;
   }
-  
+
   // Стандартные устройства
   return 5;
 };
@@ -258,30 +258,30 @@ export class TextDiv {
       this.el.style.width = `${this.width}px`;
       this.el.style.height = `${this.height}px`;
     }
-             if (resizeBehavior === "top") {
-       this.yPos = yCanvas;
-       this.el.style.top = `${this.yPos}px`;
-       const newHeight = this.height - yPos;
-       this.height = Math.max(getMinHeight(this.fontSize), newHeight);
-       this.el.style.height = `${this.height}px`;
-     }
+    if (resizeBehavior === "top") {
+      this.yPos = yCanvas;
+      this.el.style.top = `${this.yPos}px`;
+      const newHeight = this.height - yPos;
+      this.height = Math.max(getMinHeight(this.fontSize), newHeight);
+      this.el.style.height = `${this.height}px`;
+    }
     if (resizeBehavior === "left") {
       this.xPos = xCanvas;
       this.el.style.left = `${this.xPos}px`;
       this.width = Math.max(this.fontSize * 4, this.width - xPos);
       this.el.style.width = `${this.width}px`;
     }
-                      if (resizeBehavior === "topLeft") {
-       this.yPos = yCanvas;
-       this.xPos = xCanvas;
-       this.el.style.top = `${this.yPos}px`;
-       this.el.style.left = `${this.xPos}px`;
-       const newHeight = this.height - yPos;
-       this.height = Math.max(getMinHeight(this.fontSize), newHeight);
-        this.width = Math.max(this.fontSize * 4, this.width - xPos);
-       this.el.style.height = `${this.height}px`;
-       this.el.style.width = `${this.width}px`;
-     }
+    if (resizeBehavior === "topLeft") {
+      this.yPos = yCanvas;
+      this.xPos = xCanvas;
+      this.el.style.top = `${this.yPos}px`;
+      this.el.style.left = `${this.xPos}px`;
+      const newHeight = this.height - yPos;
+      this.height = Math.max(getMinHeight(this.fontSize), newHeight);
+      this.width = Math.max(this.fontSize * 4, this.width - xPos);
+      this.el.style.height = `${this.height}px`;
+      this.el.style.width = `${this.width}px`;
+    }
     if (resizeBehavior === "topRight") {
       this.yPos = yCanvas;
       this.el.style.top = `${this.yPos}px`;
