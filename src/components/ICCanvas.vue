@@ -19,6 +19,7 @@ import { getElPosition, getCenterPosition } from '@/utils/position';
 import { Borders } from '@/utils/borders';
 import { 
   AddElementCommand,
+  RemoveElementCommand,
   ChangeTextCommand,
   ChangeTextPropertiesCommand,
   ChangeIconPropertiesCommand,
@@ -129,6 +130,10 @@ export default {
     },
     addElement(evt: MouseEvent) {
       if (this.isDragging || this.isResizing || !this.sharedTextBorder) {
+        return;
+      }
+      if(this.currentEl){
+        this.currentEl.deselect();
         return;
       }
       const positions = getElPosition({ evt, el: this.canvas });
@@ -436,6 +441,57 @@ export default {
       console.log('Element resized:', elementId, oldSize, '->', newSize);
       const command = new ResizeElementCommand(elementId, oldSize, newSize, this);
       this.store.historyManager.executeCommand(command);
+    },
+    
+    // Метод для удаления выбранного элемента
+    deleteSelectedElement() {
+      console.log('Deleting selected element');
+      
+      if (!this.currentEl) {
+        console.log('No element selected for deletion');
+        return false;
+      }
+      
+      const elementId = (this.currentEl as any).id;
+      const element = this.elements[elementId];
+      
+      if (!element) {
+        console.log('Element not found in elements map');
+        return false;
+      }
+      
+      // Создаем данные элемента для возможности восстановления
+      const elementData = this.createElementData(elementId, element);
+      
+      // Создаем и выполняем команду удаления
+      const command = new RemoveElementCommand(elementId, elementData, this);
+      this.store.historyManager.executeCommand(command);
+      
+      console.log('Element deleted:', elementId);
+      return true;
+    },
+    
+    // Создать данные элемента для команд истории
+    createElementData(elementId: string, element: any) {
+      if ('text' in element) {
+        // Текстовый элемент
+        return {
+          type: 'text',
+          text: element.text,
+          fontSize: parseInt(element.el.style.fontSize) || 16,
+          xPos: element.xPos,
+          yPos: element.yPos,
+        };
+      } else {
+        // Иконка
+        return {
+          type: 'icon',
+          iconName: element.iconName,
+          iconColor: element.svgContainer.style.color || '#333333',
+          xPos: element.xPos,
+          yPos: element.yPos,
+        };
+      }
     },
   },
 };

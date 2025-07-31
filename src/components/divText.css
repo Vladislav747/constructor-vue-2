@@ -4,7 +4,6 @@
   padding: 8px;
   word-break: break-all;
   cursor: pointer;
-  background-color: rgb(147, 251, 147); /* temporarily */
 }
 
 .divText:hover {

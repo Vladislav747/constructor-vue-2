@@ -10,18 +10,22 @@
       @history-changed="onHistoryChanged"
       @reset-to-initial="onResetToInitial"
     />
+    <!-- Глобальный обработчик клавиш удаления -->
+    <DeleteHandler @delete-element="onDeleteElement" />
   </div>
 </template>
 
 <script lang="ts">
 import ICCanvas from './ICCanvas.vue';
 import ICControls from './ICControls.vue';
+import DeleteHandler from './DeleteHandler.vue';
 import type { SelectedIcon } from './types';
 
 export default {
   components: {
     ICCanvas,
     ICControls,
+    DeleteHandler,
   },
   data: () => ({
     imgUrl: '',
@@ -81,6 +85,19 @@ export default {
       const canvasRef = this.$refs.ICCanvas as InstanceType<typeof ICCanvas>;
       if (canvasRef && canvasRef.resetToInitial) {
         canvasRef.resetToInitial();
+      }
+    },
+    
+    onDeleteElement(keyPressed: string) {
+      console.log('Delete element requested via key:', keyPressed);
+      const canvasRef = this.$refs.ICCanvas as InstanceType<typeof ICCanvas>;
+      if (canvasRef && canvasRef.deleteSelectedElement) {
+        const success = canvasRef.deleteSelectedElement();
+        if (success) {
+          console.log('Element successfully deleted');
+        } else {
+          console.log('No element to delete or deletion failed');
+        }
       }
     },
   },

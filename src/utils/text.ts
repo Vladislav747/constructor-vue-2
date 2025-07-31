@@ -1,5 +1,6 @@
-import { getElPosition } from '@/utils/position';
-import { Borders } from './borders';
+import { getElPosition } from "@/utils/position";
+import { Borders } from "./borders";
+import { defaultFontSize } from "./defaultValues";
 
 const DRAG_THRESHOLD = 5;
 
@@ -11,6 +12,12 @@ const getDragThreshold = (): number => {
   
   // Стандартные устройства
   return 5;
+};
+
+const getMinHeight = (fontSize: number): number => {
+  // Убывающий коэффициент: от 2.0 для маленьких шрифтов до 1.2 для больших
+  const coefficient = Math.max(1.2, 2.5 - fontSize / 32);
+  return fontSize * coefficient;
 };
 
 export type TextDivProperties = {
@@ -26,9 +33,21 @@ export type TextDivProperties = {
   onDragStart: (id: string) => void;
   onDragEnd: (id: string) => void;
   onTextChanged?: (elementId: string, oldText: string, newText: string) => void;
-  onPropertiesChanged?: (elementId: string, oldProps: any, newProps: any) => void;
-  onMoved?: (elementId: string, oldPos: { xPos: number; yPos: number }, newPos: { xPos: number; yPos: number }) => void;
-  onResized?: (elementId: string, oldSize: { width: number; height: number }, newSize: { width: number; height: number }) => void;
+  onPropertiesChanged?: (
+    elementId: string,
+    oldProps: any,
+    newProps: any
+  ) => void;
+  onMoved?: (
+    elementId: string,
+    oldPos: { xPos: number; yPos: number },
+    newPos: { xPos: number; yPos: number }
+  ) => void;
+  onResized?: (
+    elementId: string,
+    oldSize: { width: number; height: number },
+    newSize: { width: number; height: number }
+  ) => void;
 };
 
 /** TODO: redo in "left" and "top" properties
@@ -40,7 +59,7 @@ export class TextDiv {
   id: string;
   canvasEl: HTMLDivElement;
   borders: Borders;
-  el: HTMLDivElement = document.createElement('div');
+  el: HTMLDivElement = document.createElement("div");
   text: string;
   xPos: number;
   yPos: number;
@@ -49,26 +68,53 @@ export class TextDiv {
   isSelected: boolean = true;
   isEdit: boolean = false;
   isDrag: boolean = false;
+  fontSize: number;
   onDragStart: (id: string) => void;
   onDragEnd: (id: string) => void;
   onTextChanged?: (elementId: string, oldText: string, newText: string) => void;
-  onPropertiesChanged?: (elementId: string, oldProps: any, newProps: any) => void;
-  onMoved?: (elementId: string, oldPos: { xPos: number; yPos: number }, newPos: { xPos: number; yPos: number }) => void;
-  onResized?: (elementId: string, oldSize: { width: number; height: number }, newSize: { width: number; height: number }) => void;
+  onPropertiesChanged?: (
+    elementId: string,
+    oldProps: any,
+    newProps: any
+  ) => void;
+  onMoved?: (
+    elementId: string,
+    oldPos: { xPos: number; yPos: number },
+    newPos: { xPos: number; yPos: number }
+  ) => void;
+  onResized?: (
+    elementId: string,
+    oldSize: { width: number; height: number },
+    newSize: { width: number; height: number }
+  ) => void;
   xDragStartPos: null | number = null;
   yDragStartPos: null | number = null;
   dragStartPosition: { xPos: number; yPos: number } | null = null;
   resizeStartSize: { width: number; height: number } | null = null;
 
-  constructor({ 
-    id, canvasEl, borders, text, xPos, yPos, fontSize = 16, inputFn, selectEl, onDragStart, onDragEnd,
-    onTextChanged, onPropertiesChanged, onMoved, onResized 
+  constructor({
+    id,
+    canvasEl,
+    borders,
+    text,
+    xPos,
+    yPos,
+    fontSize = defaultFontSize,
+    inputFn,
+    selectEl,
+    onDragStart,
+    onDragEnd,
+    onTextChanged,
+    onPropertiesChanged,
+    onMoved,
+    onResized,
   }: TextDivProperties) {
     this.id = id;
     this.canvasEl = canvasEl;
     this.xPos = xPos;
     this.yPos = yPos;
     this.borders = borders;
+    this.fontSize = fontSize;
     this.onDragStart = onDragStart;
     this.onDragEnd = onDragEnd;
     this.onTextChanged = onTextChanged;
@@ -77,9 +123,9 @@ export class TextDiv {
     this.onResized = onResized;
 
     // Adding basics
-    this.el.classList.add('divText');
-    this.el.addEventListener('click', (evt: MouseEvent) => {
-      console.log('event click');
+    this.el.classList.add("divText");
+    this.el.addEventListener("click", (evt: MouseEvent) => {
+      console.log("event click");
       evt.stopImmediatePropagation();
       if (this.isDrag) {
         return;
@@ -93,23 +139,23 @@ export class TextDiv {
       }
     });
 
-    this.el.addEventListener('mousedown', () => {
+    this.el.addEventListener("mousedown", () => {
       if (this.isEdit) {
         return;
       }
-      this.el.addEventListener('mousemove', this.checkDragThreshold);
+      this.el.addEventListener("mousemove", this.checkDragThreshold);
     });
 
-    this.el.addEventListener('mouseup', this.onMouseUp);
+    this.el.addEventListener("mouseup", this.onMouseUp);
 
-    this.el.addEventListener('input', () => {
+    this.el.addEventListener("input", () => {
       const newText = this.el.innerText;
       const oldText = this.text;
-      
+
       if (oldText !== newText && this.onTextChanged) {
         this.onTextChanged(this.id, oldText, newText);
       }
-      
+
       this.text = newText;
       inputFn(this.text);
       this.showBorders();
@@ -124,35 +170,37 @@ export class TextDiv {
   }
 
   onMouseUp = () => {
-    this.el.removeEventListener('mousemove', this.checkDragThreshold);
+    this.el.removeEventListener("mousemove", this.checkDragThreshold);
     if (this.isEdit) {
       return;
     }
     const isResize = this.borders.isResize;
     if (isResize) {
-      console.log('onMouseUp isResize');
+      console.log("onMouseUp isResize");
       this.borders.cancelResize();
       return;
     }
     // setTimeout to avoid calling setIsEdit before mouseup on click event
     setTimeout(() => {
-      console.log('onMouseUp setTimeout');
+      console.log("onMouseUp setTimeout");
       if (this.isEdit) {
         return;
       }
-      
+
       // Отслеживаем завершение перемещения
       if (this.isDrag && this.dragStartPosition && this.onMoved) {
         const currentPos = { xPos: this.xPos, yPos: this.yPos };
-        if (this.dragStartPosition.xPos !== currentPos.xPos || 
-            this.dragStartPosition.yPos !== currentPos.yPos) {
+        if (
+          this.dragStartPosition.xPos !== currentPos.xPos ||
+          this.dragStartPosition.yPos !== currentPos.yPos
+        ) {
           this.onMoved(this.id, this.dragStartPosition, currentPos);
         }
       }
-      
+
       this.isDrag = false;
       this.onDragEnd(this.id);
-      this.el.classList.remove('isDragging');
+      this.el.classList.remove("isDragging");
       this.xDragStartPos = null;
       this.yDragStartPos = null;
       this.dragStartPosition = null;
@@ -161,7 +209,7 @@ export class TextDiv {
 
   checkDragThreshold = (evt: MouseEvent) => {
     if (this.isEdit || !this.isSelected) {
-      this.el.removeEventListener('mousemove', this.checkDragThreshold);
+      this.el.removeEventListener("mousemove", this.checkDragThreshold);
       return;
     }
     const { xPos, yPos } = getElPosition({ evt, el: this.el });
@@ -176,8 +224,8 @@ export class TextDiv {
       this.isDrag = true;
       this.dragStartPosition = { xPos: this.xPos, yPos: this.yPos };
       this.onDragStart(this.id);
-      this.el.classList.add('isDragging');
-      this.el.removeEventListener('mousemove', this.checkDragThreshold);
+      this.el.classList.add("isDragging");
+      this.el.removeEventListener("mousemove", this.checkDragThreshold);
     }
   };
 
@@ -187,60 +235,66 @@ export class TextDiv {
     }
     const resizeBehavior = this.borders.resizeBehavior;
     const { xPos, yPos } = getElPosition({ evt, el: this.borders.borderEl });
-    const { xPos: xCanvas, yPos: yCanvas } = getElPosition({ evt, el: this.canvasEl });
+    const { xPos: xCanvas, yPos: yCanvas } = getElPosition({
+      evt,
+      el: this.canvasEl,
+    });
     if (this.xDragStartPos === null || this.yDragStartPos === null) {
       this.xDragStartPos = xCanvas;
       this.yDragStartPos = yCanvas;
     }
-    if (resizeBehavior === 'right') {
-      this.width = xPos;
+    if (resizeBehavior === "right") {
+      this.width = Math.max(this.fontSize * 4, xPos);
+      console.log("this.width", this.width);
       this.el.style.width = `${this.width}px`;
     }
-    if (resizeBehavior === 'bot') {
-      this.height = yPos;
+    if (resizeBehavior === "bot") {
+      this.height = Math.max(getMinHeight(this.fontSize), yPos);
       this.el.style.height = `${this.height}px`;
     }
-    if (resizeBehavior === 'botRight') {
-      this.width = xPos;
-      this.height = yPos;
+    if (resizeBehavior === "botRight") {
+      this.width = Math.max(this.fontSize * 4, xPos);
+      this.height = Math.max(getMinHeight(this.fontSize), yPos);
       this.el.style.width = `${this.width}px`;
       this.el.style.height = `${this.height}px`;
     }
-    if (resizeBehavior === 'top') {
-      this.yPos = yCanvas;
-      this.el.style.top = `${this.yPos}px`;
-      this.height = this.height - yPos;
-      this.el.style.height = `${this.height}px`;
-    }
-    if (resizeBehavior === 'left') {
+             if (resizeBehavior === "top") {
+       this.yPos = yCanvas;
+       this.el.style.top = `${this.yPos}px`;
+       const newHeight = this.height - yPos;
+       this.height = Math.max(getMinHeight(this.fontSize), newHeight);
+       this.el.style.height = `${this.height}px`;
+     }
+    if (resizeBehavior === "left") {
       this.xPos = xCanvas;
       this.el.style.left = `${this.xPos}px`;
-      this.width = this.width - xPos;
+      this.width = Math.max(this.fontSize * 4, this.width - xPos);
       this.el.style.width = `${this.width}px`;
     }
-    if (resizeBehavior === 'topLeft') {
+                      if (resizeBehavior === "topLeft") {
+       this.yPos = yCanvas;
+       this.xPos = xCanvas;
+       this.el.style.top = `${this.yPos}px`;
+       this.el.style.left = `${this.xPos}px`;
+       const newHeight = this.height - yPos;
+       this.height = Math.max(getMinHeight(this.fontSize), newHeight);
+        this.width = Math.max(this.fontSize * 4, this.width - xPos);
+       this.el.style.height = `${this.height}px`;
+       this.el.style.width = `${this.width}px`;
+     }
+    if (resizeBehavior === "topRight") {
       this.yPos = yCanvas;
-      this.xPos = xCanvas;
       this.el.style.top = `${this.yPos}px`;
-      this.el.style.left = `${this.xPos}px`;
-      this.height = this.height - yPos;
-      this.width = this.width - xPos;
+      this.height = Math.max(getMinHeight(this.fontSize), this.height - yPos);
+      this.width = Math.max(this.fontSize * 4, xPos);
       this.el.style.height = `${this.height}px`;
       this.el.style.width = `${this.width}px`;
     }
-    if (resizeBehavior === 'topRight') {
-      this.yPos = yCanvas;
-      this.el.style.top = `${this.yPos}px`;
-      this.height = this.height - yPos;
-      this.width = xPos;
-      this.el.style.height = `${this.height}px`;
-      this.el.style.width = `${this.width}px`;
-    }
-    if (resizeBehavior === 'botLeft') {
+    if (resizeBehavior === "botLeft") {
       this.xPos = xCanvas;
       this.el.style.left = `${this.xPos}px`;
-      this.height = yPos;
-      this.width = this.width - xPos;
+      this.height = Math.max(getMinHeight(this.fontSize), yPos);
+      this.width = Math.max(this.fontSize * 4, this.width - xPos);
       this.el.style.height = `${this.height}px`;
       this.el.style.width = `${this.width}px`;
     }
@@ -263,13 +317,17 @@ export class TextDiv {
   }
 
   public updateFontSize(fontSize: number) {
-    console.log('TextDiv: updating font size to', fontSize);
+    console.log("TextDiv: updating font size to", fontSize);
     const oldFontSize = parseInt(this.el.style.fontSize) || 16;
-    
+
     if (oldFontSize !== fontSize && this.onPropertiesChanged) {
-      this.onPropertiesChanged(this.id, { fontSize: oldFontSize }, { fontSize });
+      this.onPropertiesChanged(
+        this.id,
+        { fontSize: oldFontSize },
+        { fontSize }
+      );
     }
-    
+
     this.el.style.fontSize = `${fontSize}px`;
     // Обновляем границы так как размер элемента мог измениться
     setTimeout(() => {
@@ -296,11 +354,11 @@ export class TextDiv {
     }
     if (isEdit === true) {
       this.isEdit = true;
-      this.el.contentEditable = 'true';
+      this.el.contentEditable = "true";
       return;
     }
     this.isEdit = false;
-    this.el.contentEditable = 'false';
+    this.el.contentEditable = "false";
   }
 
   public deselect() {

@@ -44,6 +44,9 @@
       <div :class="$style.shortcut">
         <kbd>Ctrl+Shift+Z</kbd> - Сброс
       </div>
+      <div :class="$style.shortcut">
+        <kbd>Delete</kbd> - Удалить элемент
+      </div>
     </div>
   </div>
 </template>
