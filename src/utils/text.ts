@@ -15,7 +15,12 @@ const getDragThreshold = (): number => {
 };
 
 const getMinHeight = (fontSize: number): number => {
+  // Вычисляет минимальную высоту текстового элемента на основе размера шрифта
   // Убывающий коэффициент: от 2.0 для маленьких шрифтов до 1.2 для больших
+  // Формула: coefficient = max(1.2, 2.5 - fontSize/32)
+  // Примеры: fontSize=16 → coeff=2.0 → height=32px
+  //          fontSize=32 → coeff=1.5 → height=48px  
+  //          fontSize=52 → coeff=1.2 → height=62px
   const coefficient = Math.max(1.2, 2.5 - fontSize / 32);
   return fontSize * coefficient;
 };
@@ -244,57 +249,87 @@ export class TextDiv {
       this.yDragStartPos = yCanvas;
     }
     if (resizeBehavior === "right") {
-      this.width = Math.max(this.fontSize * 4, xPos);
+      // Изменение размера вправо: ограничиваем ширину правой границей канваса
+      const canvasWidth = this.canvasEl.offsetWidth;
+      const maxWidth = canvasWidth - this.xPos; // Максимальная доступная ширина от текущей позиции
+      this.width = Math.max(this.fontSize * 4, Math.min(xPos, maxWidth));
       console.log("this.width", this.width);
       this.el.style.width = `${this.width}px`;
     }
     if (resizeBehavior === "bot") {
-      this.height = Math.max(getMinHeight(this.fontSize), yPos);
+      // Изменение размера вниз: ограничиваем высоту нижней границей канваса
+      const canvasHeight = this.canvasEl.offsetHeight;
+      const maxHeight = canvasHeight - this.yPos; // Максимальная доступная высота от текущей позиции
+      this.height = Math.max(getMinHeight(this.fontSize), Math.min(yPos, maxHeight));
       this.el.style.height = `${this.height}px`;
     }
     if (resizeBehavior === "botRight") {
-      this.width = Math.max(this.fontSize * 4, xPos);
-      this.height = Math.max(getMinHeight(this.fontSize), yPos);
+      // Изменение размера по диагонали (вниз-вправо): ограничиваем обе стороны
+      const canvasWidth = this.canvasEl.offsetWidth;
+      const canvasHeight = this.canvasEl.offsetHeight;
+      const maxWidth = canvasWidth - this.xPos;   // Ограничение по правой границе
+      const maxHeight = canvasHeight - this.yPos; // Ограничение по нижней границе
+      this.width = Math.max(this.fontSize * 4, Math.min(xPos, maxWidth));
+      this.height = Math.max(getMinHeight(this.fontSize), Math.min(yPos, maxHeight));
       this.el.style.width = `${this.width}px`;
       this.el.style.height = `${this.height}px`;
     }
-    if (resizeBehavior === "top") {
-      this.yPos = yCanvas;
-      this.el.style.top = `${this.yPos}px`;
-      const newHeight = this.height - yPos;
-      this.height = Math.max(getMinHeight(this.fontSize), newHeight);
-      this.el.style.height = `${this.height}px`;
-    }
+                      if (resizeBehavior === "top") {
+        // Изменение размера сверху: элемент двигается вверх, высота изменяется
+        // Ограничиваем позицию верхней границей канваса (не выше 0)
+        this.yPos = Math.max(0, yCanvas);
+        const newHeight = this.height - yPos;
+        this.height = Math.max(getMinHeight(this.fontSize), newHeight);
+        
+        this.el.style.top = `${this.yPos}px`;
+        this.el.style.height = `${this.height}px`;
+      }
     if (resizeBehavior === "left") {
-      this.xPos = xCanvas;
-      this.el.style.left = `${this.xPos}px`;
+      // Изменение размера слева: элемент двигается влево, ширина изменяется
+      // Ограничиваем позицию левой границей канваса (не левее 0)
+      this.xPos = Math.max(0, xCanvas);
       this.width = Math.max(this.fontSize * 4, this.width - xPos);
+      
+      this.el.style.left = `${this.xPos}px`;
       this.el.style.width = `${this.width}px`;
     }
-    if (resizeBehavior === "topLeft") {
-      this.yPos = yCanvas;
-      this.xPos = xCanvas;
-      this.el.style.top = `${this.yPos}px`;
-      this.el.style.left = `${this.xPos}px`;
-      const newHeight = this.height - yPos;
-      this.height = Math.max(getMinHeight(this.fontSize), newHeight);
-      this.width = Math.max(this.fontSize * 4, this.width - xPos);
-      this.el.style.height = `${this.height}px`;
-      this.el.style.width = `${this.width}px`;
-    }
+                      if (resizeBehavior === "topLeft") {
+        // Изменение размера по диагонали (вверх-влево): элемент двигается в оба направления
+        // Ограничиваем позицию верхней и левой границами канваса
+        this.yPos = Math.max(0, yCanvas);
+        this.xPos = Math.max(0, xCanvas);
+        const newHeight = this.height - yPos;
+        this.height = Math.max(getMinHeight(this.fontSize), newHeight);
+        this.width = Math.max(this.fontSize * 4, this.width - xPos);
+        
+        this.el.style.top = `${this.yPos}px`;
+        this.el.style.left = `${this.xPos}px`;
+        this.el.style.height = `${this.height}px`;
+        this.el.style.width = `${this.width}px`;
+      }
     if (resizeBehavior === "topRight") {
-      this.yPos = yCanvas;
-      this.el.style.top = `${this.yPos}px`;
+      // Изменение размера по диагонали (вверх-вправо): элемент двигается вверх, расширяется вправо
+      const canvasWidth = this.canvasEl.offsetWidth;
+      const maxWidth = canvasWidth - this.xPos; // Ограничение по правой границе
+      
+      this.yPos = Math.max(0, yCanvas); // Ограничение по верхней границе
       this.height = Math.max(getMinHeight(this.fontSize), this.height - yPos);
-      this.width = Math.max(this.fontSize * 4, xPos);
+      this.width = Math.max(this.fontSize * 4, Math.min(xPos, maxWidth));
+      
+      this.el.style.top = `${this.yPos}px`;
       this.el.style.height = `${this.height}px`;
       this.el.style.width = `${this.width}px`;
     }
     if (resizeBehavior === "botLeft") {
-      this.xPos = xCanvas;
-      this.el.style.left = `${this.xPos}px`;
-      this.height = Math.max(getMinHeight(this.fontSize), yPos);
+      // Изменение размера по диагонали (вниз-влево): элемент расширяется вниз, двигается влево
+      const canvasHeight = this.canvasEl.offsetHeight;
+      const maxHeight = canvasHeight - this.yPos; // Ограничение по нижней границе
+      
+      this.xPos = Math.max(0, xCanvas); // Ограничение по левой границе
+      this.height = Math.max(getMinHeight(this.fontSize), Math.min(yPos, maxHeight));
       this.width = Math.max(this.fontSize * 4, this.width - xPos);
+      
+      this.el.style.left = `${this.xPos}px`;
       this.el.style.height = `${this.height}px`;
       this.el.style.width = `${this.width}px`;
     }
@@ -303,8 +338,24 @@ export class TextDiv {
 
   public moveEl(evt: MouseEvent) {
     const { xPos, yPos } = getElPosition({ evt, el: this.canvasEl });
-    this.xPos = xPos - (this.xDragStartPos || 0);
-    this.yPos = yPos - (this.yDragStartPos || 0);
+    // Вычисляем новую позицию с учетом точки захвата при начале перетаскивания
+    const newXPos = xPos - (this.xDragStartPos || 0);
+    const newYPos = yPos - (this.yDragStartPos || 0);
+    
+    // Получаем размеры канваса и текущего элемента для расчета границ
+    const canvasWidth = this.canvasEl.offsetWidth;
+    const canvasHeight = this.canvasEl.offsetHeight;
+    const elementWidth = this.el.offsetWidth;
+    const elementHeight = this.el.offsetHeight;
+    
+    // Ограничиваем позицию элемента границами канваса:
+    // - Левая граница: не меньше 0
+    // - Правая граница: не больше (ширина_канваса - ширина_элемента)
+    // - Верхняя граница: не меньше 0  
+    // - Нижняя граница: не больше (высота_канваса - высота_элемента)
+    this.xPos = Math.max(0, Math.min(newXPos, canvasWidth - elementWidth));
+    this.yPos = Math.max(0, Math.min(newYPos, canvasHeight - elementHeight));
+    
     this.el.style.left = `${this.xPos}px`;
     this.el.style.top = `${this.yPos}px`;
     this.showBorders();
@@ -378,14 +429,21 @@ export class TextDiv {
     this.canvasEl.appendChild(this.el);
     const width = this.el.offsetWidth;
     const height = this.el.offsetHeight;
+    
+    // Получаем размеры канваса для расчета границ
+    const canvasWidth = this.canvasEl.offsetWidth;
+    const canvasHeight = this.canvasEl.offsetHeight;
+    
+    // Позиционируем элемент по центру исходной позиции клика/касания
     this.xPos = Math.floor(this.xPos - width / 2) || 0;
     this.yPos = Math.floor(this.yPos - height / 2) || 0;
-    if (this.xPos < 0) {
-      this.xPos = 0;
-    }
-    if (this.yPos < 0) {
-      this.yPos = 0;
-    }
+    
+    // Ограничиваем позицию границами канваса чтобы элемент был полностью видим:
+    // - По горизонтали: от 0 до (ширина_канваса - ширина_элемента)
+    // - По вертикали: от 0 до (высота_канваса - высота_элемента)
+    this.xPos = Math.max(0, Math.min(this.xPos, canvasWidth - width));
+    this.yPos = Math.max(0, Math.min(this.yPos, canvasHeight - height));
+    
     this.el.style.left = `${this.xPos}px`;
     this.el.style.top = `${this.yPos}px`;
     this.el.style.width = `${width}px`;
