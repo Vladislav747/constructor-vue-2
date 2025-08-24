@@ -1,5 +1,5 @@
 import { getElPosition } from "@/utils/position";
-import { Borders } from "./borders";
+import type { Borders } from "./borders";
 import { defaultFontSize } from "./defaultValues";
 
 const DRAG_THRESHOLD = 3; // Уменьшили порог
