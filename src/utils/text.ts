@@ -2,16 +2,21 @@ import { getElPosition } from "@/utils/position";
 import { Borders } from "./borders";
 import { defaultFontSize } from "./defaultValues";
 
-const DRAG_THRESHOLD = 5;
+const DRAG_THRESHOLD = 3; // Уменьшили порог
 
 const getDragThreshold = (): number => {
-  // Высокие DPI
+  // Высокие DPI - нужен больший порог в пикселях
   if (window.devicePixelRatio > 2) {
-    return 8;
+    return 4;
+  }
+  
+  // Планшеты и сенсорные устройства
+  if ('ontouchstart' in window) {
+    return 6;
   }
 
-  // Стандартные устройства
-  return 5;
+  // Стандартные устройства с мышью
+  return 3;
 };
 
 const getMinHeight = (fontSize: number): number => {
@@ -25,6 +30,8 @@ const getMinHeight = (fontSize: number): number => {
   return fontSize * coefficient;
 };
 
+export type TextAlignment = 'left' | 'center' | 'right';
+
 export type TextDivProperties = {
   id: string;
   canvasEl: HTMLDivElement;
@@ -33,6 +40,13 @@ export type TextDivProperties = {
   xPos: number;
   yPos: number;
   fontSize?: number;
+  fontName?: string;
+  fontStyle?: string;
+  fontColor?: string;
+  fontColorBg?: string;
+  fontRadius?: string;
+  fontAlign?: string;
+  textAlign?: TextAlignment;
   inputFn: (value: string) => void;
   selectEl: (id: string) => void;
   onDragStart: (id: string) => void;
@@ -61,11 +75,19 @@ export type TextDivProperties = {
  *  Helper function is probably needed;
  */
 export class TextDiv {
+  readonly type = 'text' as const; // Добавляем идентификатор типа
   id: string;
   canvasEl: HTMLDivElement;
   borders: Borders;
   el: HTMLDivElement = document.createElement("div");
   text: string;
+  fontSize: number = 12;
+  fontName?: string = 'Inter';
+  fontStyle?: string = 'normal';
+  fontColor?: string = '#001122';
+  fontColorBg?: string = 'Без цвета';
+  fontRadius?: string = '0';
+  fontAlign?: string = 'left';
   xPos: number;
   yPos: number;
   width: number = 0;
@@ -73,7 +95,6 @@ export class TextDiv {
   isSelected: boolean = true;
   isEdit: boolean = false;
   isDrag: boolean = false;
-  fontSize: number;
   onDragStart: (id: string) => void;
   onDragEnd: (id: string) => void;
   onTextChanged?: (elementId: string, oldText: string, newText: string) => void;
@@ -105,6 +126,12 @@ export class TextDiv {
     xPos,
     yPos,
     fontSize = defaultFontSize,
+    fontName,
+    fontStyle,
+    fontColor,
+    fontColorBg,
+    fontRadius,
+    fontAlign,
     inputFn,
     selectEl,
     onDragStart,
@@ -120,6 +147,12 @@ export class TextDiv {
     this.yPos = yPos;
     this.borders = borders;
     this.fontSize = fontSize;
+    this.fontName = fontName;
+    this.fontStyle = fontStyle;
+    this.fontColor = fontColor;
+    this.fontColorBg = fontColorBg;
+    this.fontRadius = fontRadius;
+    this.fontAlign = fontAlign;
     this.onDragStart = onDragStart;
     this.onDragEnd = onDragEnd;
     this.onTextChanged = onTextChanged;
@@ -144,14 +177,23 @@ export class TextDiv {
       }
     });
 
-    this.el.addEventListener("mousedown", () => {
+    this.el.addEventListener("mousedown", (evt: MouseEvent) => {
       if (this.isEdit) {
         return;
       }
-      this.el.addEventListener("mousemove", this.checkDragThreshold);
+      
+      // Предотвращаем стандартное поведение браузера
+      evt.preventDefault();
+      
+      // Запоминаем начальную позицию мыши
+      const { xPos, yPos } = getElPosition({ evt, el: this.el });
+      this.xDragStartPos = xPos;
+      this.yDragStartPos = yPos;
+      
+      // Добавляем обработчики на document для лучшего отслеживания
+      document.addEventListener("mousemove", this.checkDragThreshold);
+      document.addEventListener("mouseup", this.onMouseUp);
     });
-
-    this.el.addEventListener("mouseup", this.onMouseUp);
 
     this.el.addEventListener("input", () => {
       const newText = this.el.innerText;
@@ -169,22 +211,69 @@ export class TextDiv {
     // Customization
     this.text = text;
     this.el.textContent = text;
-    this.el.style.left = `${xPos}px`;
-    this.el.style.top = `${yPos}px`;
-    this.el.style.fontSize = `${fontSize}px`;
+    
+    // Применяем все стили
+    this.applyStyles();
+  }
+
+  // Метод для применения всех CSS стилей
+  private applyStyles(): void {
+    // Позиционирование
+    this.el.style.left = `${this.xPos}px`;
+    this.el.style.top = `${this.yPos}px`;
+    
+    // Шрифт и размер
+    this.el.style.fontSize = `${this.fontSize}px`;
+    this.el.style.fontFamily = this.fontName || 'Inter';
+    
+    // Стиль шрифта (normal, italic, oblique)
+    if (this.fontStyle && this.fontStyle !== 'normal') {
+      this.el.style.fontStyle = this.fontStyle.toLowerCase();
+    } else {
+      this.el.style.fontStyle = 'normal';
+    }
+    
+    // Цвет текста
+    if (this.fontColor && this.fontColor !== '#001122') {
+      this.el.style.color = this.fontColor;
+    }
+    
+    // Выравнивание текста
+    this.el.style.textAlign = this.fontAlign || 'left';
+    
+    // Радиус границ
+    if (this.fontRadius && this.fontRadius !== '0') {
+      this.el.style.borderRadius = `${this.fontRadius}px`;
+    }
+    
+    // Цвет фона
+    if (this.fontColorBg && this.fontColorBg !== 'Без цвета') {
+      this.el.style.backgroundColor = this.fontColorBg;
+      // Добавляем немного padding для лучшего вида
+      this.el.style.padding = '4px 8px';
+    } else {
+      this.el.style.backgroundColor = 'transparent';
+      this.el.style.padding = '0';
+    }
   }
 
   onMouseUp = () => {
-    this.el.removeEventListener("mousemove", this.checkDragThreshold);
+    // Удаляем все обработчики с document
+    document.removeEventListener("mousemove", this.checkDragThreshold);
+    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener("mouseup", this.onMouseUp);
+    
     if (this.isEdit) {
       return;
     }
+    
     const isResize = this.borders.isResize;
     if (isResize) {
       console.log("onMouseUp isResize");
       this.borders.cancelResize();
       return;
     }
+    
     // setTimeout to avoid calling setIsEdit before mouseup on click event
     setTimeout(() => {
       console.log("onMouseUp setTimeout");
@@ -214,23 +303,45 @@ export class TextDiv {
 
   checkDragThreshold = (evt: MouseEvent) => {
     if (this.isEdit || !this.isSelected) {
-      this.el.removeEventListener("mousemove", this.checkDragThreshold);
+      document.removeEventListener("mousemove", this.checkDragThreshold);
       return;
     }
+    
+    // Получаем текущую позицию мыши относительно элемента
     const { xPos, yPos } = getElPosition({ evt, el: this.el });
+    
+    // Если начальная позиция не была установлена, устанавливаем её
     if (this.xDragStartPos === null || this.yDragStartPos === null) {
       this.xDragStartPos = xPos;
       this.yDragStartPos = yPos;
       return;
     }
+    
+    // Вычисляем расстояние перемещения
     const dx = this.xDragStartPos - xPos;
     const dy = this.yDragStartPos - yPos;
-    if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) {
+    const distance = Math.sqrt(dx * dx + dy * dy); // Евклидово расстояние
+    
+    // Используем умный порог в зависимости от устройства
+    const threshold = getDragThreshold();
+    
+    // Проверяем превышен ли порог
+    if (distance > threshold) {
       this.isDrag = true;
       this.dragStartPosition = { xPos: this.xPos, yPos: this.yPos };
       this.onDragStart(this.id);
       this.el.classList.add("isDragging");
-      this.el.removeEventListener("mousemove", this.checkDragThreshold);
+      
+      // Удаляем обработчик проверки порога и добавляем обработчик перемещения
+      document.removeEventListener("mousemove", this.checkDragThreshold);
+      document.addEventListener("mousemove", this.handleMouseMove);
+    }
+  };
+
+  // Отдельный обработчик для перемещения после превышения порога
+  handleMouseMove = (evt: MouseEvent) => {
+    if (this.isDrag) {
+      this.moveEl(evt);
     }
   };
 
@@ -367,24 +478,89 @@ export class TextDiv {
     this.showBorders();
   }
 
-  public updateFontSize(fontSize: number) {
-    console.log("TextDiv: updating font size to", fontSize);
-    const oldFontSize = parseInt(this.el.style.fontSize) || 16;
-
-    if (oldFontSize !== fontSize && this.onPropertiesChanged) {
-      this.onPropertiesChanged(
-        this.id,
-        { fontSize: oldFontSize },
-        { fontSize }
-      );
-    }
-
-    this.el.style.fontSize = `${fontSize}px`;
-    // Обновляем границы так как размер элемента мог измениться
-    setTimeout(() => {
-      this.showBorders();
-    }, 0);
+  // Методы для обновления отдельных стилей
+  public updateFontSize(fontSize: string | number): void {
+    const fontSizeValue = typeof fontSize === 'string' ? parseInt(fontSize, 10) : fontSize;
+    this.fontSize = fontSizeValue;
+    this.el.style.fontSize = `${fontSizeValue}px`;
+    this.showBorders();
   }
+
+  public updateFontName(fontName: string): void {
+    this.fontName = fontName;
+    this.el.style.fontFamily = fontName;
+    this.showBorders();
+  }
+
+  public updateFontStyle(fontStyle: string): void {
+    this.fontStyle = fontStyle;
+    if (fontStyle && fontStyle !== 'normal') {
+      this.el.style.fontStyle = fontStyle.toLowerCase();
+    } else {
+      this.el.style.fontStyle = 'normal';
+    }
+    this.showBorders();
+  }
+
+  public updateFontColor(fontColor: string): void {
+    this.fontColor = fontColor;
+    this.el.style.color = fontColor;
+    this.showBorders();
+  }
+
+  public updateFontAlign(fontAlign: string): void {
+    this.fontAlign = fontAlign;
+    this.el.style.textAlign = fontAlign;
+    this.showBorders();
+  }
+
+  public updateFontRadius(fontRadius: string): void {
+    this.fontRadius = fontRadius;
+    if (fontRadius && fontRadius !== '0') {
+      this.el.style.borderRadius = `${fontRadius}px`;
+    } else {
+      this.el.style.borderRadius = '0';
+    }
+    this.showBorders();
+  }
+
+  public updateFontColorBg(fontColorBg: string): void {
+    this.fontColorBg = fontColorBg;
+    if (fontColorBg && fontColorBg !== 'Без цвета') {
+      this.el.style.backgroundColor = fontColorBg;
+      this.el.style.padding = '4px 8px';
+    } else {
+      this.el.style.backgroundColor = 'transparent';
+      this.el.style.padding = '0';
+    }
+    this.showBorders();
+  }
+
+  // Метод для обновления всех стилей сразу
+  public updateAllStyles(styles: Partial<{
+    fontSize: number;
+    fontName: string;
+    fontStyle: string;
+    fontColor: string;
+    fontAlign: string;
+    fontRadius: string;
+    fontColorBg: string;
+  }>): void {
+    // Обновляем свойства
+    if (styles.fontSize !== undefined) this.fontSize = styles.fontSize;
+    if (styles.fontName !== undefined) this.fontName = styles.fontName;
+    if (styles.fontStyle !== undefined) this.fontStyle = styles.fontStyle;
+    if (styles.fontColor !== undefined) this.fontColor = styles.fontColor;
+    if (styles.fontAlign !== undefined) this.fontAlign = styles.fontAlign;
+    if (styles.fontRadius !== undefined) this.fontRadius = styles.fontRadius;
+    if (styles.fontColorBg !== undefined) this.fontColorBg = styles.fontColorBg;
+
+    // Применяем все стили
+    this.applyStyles();
+    this.showBorders();
+  }
+
+
 
   showBorders() {
     this.borders.show(this.getPositions());
@@ -415,6 +591,19 @@ export class TextDiv {
   public deselect() {
     this.isSelected = false;
     this.setIsEdit(false);
+  }
+
+  // Метод для удаления элемента и очистки обработчиков
+  public destroy() {
+    // Удаляем обработчики событий с document
+    document.removeEventListener("mousemove", this.checkDragThreshold);
+    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener("mouseup", this.onMouseUp);
+    
+    // Удаляем элемент из DOM
+    if (this.el.parentNode) {
+      this.el.parentNode.removeChild(this.el);
+    }
   }
 
   /** TODO: Fix overlapping to the right and bottom

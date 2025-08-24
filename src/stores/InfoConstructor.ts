@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { type ICMode } from '@/components/types';
 import { HistoryManager } from '@/utils/history';
+import { defaultFontSize } from '@/utils/defaultValues';
 
 export const useInfoConstructor = defineStore('IGConstructor', {
   state: (): {
@@ -12,7 +13,7 @@ export const useInfoConstructor = defineStore('IGConstructor', {
   } => ({
     mode: 'text',
     textarea: 'Ваш текст',
-    fontSize: 16,
+    fontSize: defaultFontSize,
     iconColor: '#333333',
     historyManager: new HistoryManager(),
   }),
